@@ -1,0 +1,170 @@
+[
+ {
+  "name": "governance-policy-studio",
+  "path": "/policy-studio"
+ },
+ {
+  "name": "governance-policy-builder",
+  "path": "/policies"
+ },
+ {
+  "name": "governance-document-policies",
+  "path": "/document-policies"
+ },
+ {
+  "name": "governance-budgets",
+  "path": "/budgets"
+ },
+ {
+  "name": "governance-budget-new",
+  "path": "/budgets/new"
+ },
+ {
+  "name": "governance-quotas",
+  "path": "/quotas"
+ },
+ {
+  "name": "governance-optimization-dashboard",
+  "path": "/optimization",
+  "wait": 2500,
+  "actions": []
+ },
+ {
+  "name": "governance-optimization-savings",
+  "path": "/optimization",
+  "wait": 2500,
+  "actions": [
+   {
+    "click": "role=tab[name='Savings']"
+   },
+   {
+    "wait": 900
+   }
+  ]
+ },
+ {
+  "name": "governance-optimization-inspector",
+  "path": "/optimization",
+  "wait": 2500,
+  "actions": [
+   {
+    "click": "role=tab[name='Prompt inspector']"
+   },
+   {
+    "wait": 900
+   }
+  ]
+ },
+ {
+  "name": "governance-optimization-documents",
+  "path": "/optimization",
+  "wait": 2500,
+  "actions": [
+   {
+    "click": "role=tab[name='Documents']"
+   },
+   {
+    "wait": 900
+   }
+  ]
+ },
+ {
+  "name": "governance-optimization-policies",
+  "path": "/optimization",
+  "wait": 2500,
+  "actions": [
+   {
+    "click": "role=tab[name='Policies']"
+   },
+   {
+    "wait": 900
+   }
+  ]
+ },
+ {
+  "name": "governance-optimization-fidelity",
+  "path": "/optimization",
+  "wait": 2500,
+  "actions": [
+   {
+    "click": "role=tab[name='Fidelity']"
+   },
+   {
+    "wait": 900
+   }
+  ]
+ },
+ {
+  "name": "governance-optimization-how",
+  "path": "/optimization",
+  "wait": 2500,
+  "actions": [
+   {
+    "click": "role=tab[name='How it works']"
+   },
+   {
+    "wait": 900
+   }
+  ]
+ },
+ {
+  "name": "governance-quota-new",
+  "path": "/quotas",
+  "actions": [
+   {
+    "click": "text=New quota"
+   },
+   {
+    "wait": 900
+   }
+  ]
+ },
+ {
+  "name": "governance-studio-templates",
+  "path": "/policy-studio",
+  "actions": [
+   {
+    "click": "button:has-text('Templates')"
+   },
+   {
+    "wait": 600
+   }
+  ]
+ },
+ {
+  "name": "governance-studio-rego",
+  "path": "/policy-studio",
+  "actions": [
+   {
+    "click": "button:has-text('Compiled Rego')"
+   },
+   {
+    "wait": 700
+   }
+  ]
+ },
+ {
+  "name": "governance-studio-validation",
+  "path": "/policy-studio",
+  "actions": [
+   {
+    "click": "text=Validation"
+   },
+   {
+    "wait": 600
+   }
+  ]
+ },
+ {
+  "name": "governance-studio-node",
+  "path": "/policy-studio",
+  "actions": [
+   {
+    "click": "text=Token limit >> nth=-1"
+   },
+   {
+    "wait": 700
+   }
+  ]
+ }
+]

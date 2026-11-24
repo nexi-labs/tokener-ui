@@ -1,0 +1,70 @@
+[
+ {
+  "name": "refinery-overview",
+  "path": "/refinery",
+  "wait": 2000
+ },
+ {
+  "name": "refinery-connections",
+  "path": "/refinery/connections",
+  "wait": 1500
+ },
+ {
+  "name": "refinery-datasets",
+  "path": "/refinery/datasets",
+  "wait": 1500
+ },
+ {
+  "name": "refinery-dataset-detail",
+  "path": "/refinery/datasets/ds_support_raw",
+  "wait": 3000
+ },
+ {
+  "name": "refinery-recipes",
+  "path": "/refinery/recipes",
+  "wait": 1500
+ },
+ {
+  "name": "refinery-recipe-new",
+  "path": "/refinery/recipes",
+  "wait": 1200,
+  "actions": [
+   {
+    "click": "button:has-text('New recipe')"
+   },
+   {
+    "wait": 800
+   }
+  ]
+ },
+ {
+  "name": "refinery-recipe-detail",
+  "path": "/refinery/recipes/rcp_support_clean",
+  "wait": 2500
+ },
+ {
+  "name": "refinery-runs",
+  "path": "/refinery/runs",
+  "wait": 1500
+ },
+ {
+  "name": "refinery-run-detail",
+  "path": "/refinery/runs/run_0116",
+  "wait": 2500
+ },
+ {
+  "name": "refinery-runners",
+  "path": "/refinery/runners",
+  "wait": 1500
+ },
+ {
+  "name": "refinery-streams",
+  "path": "/refinery/streams",
+  "wait": 1500
+ },
+ {
+  "name": "refinery-sovereignty",
+  "path": "/refinery/sovereignty",
+  "wait": 1800
+ }
+]

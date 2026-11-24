@@ -1,0 +1,111 @@
+[
+ {
+  "name": "mlops-overview",
+  "path": "/mlops",
+  "wait": 2000
+ },
+ {
+  "name": "mlops-pipeline-studio",
+  "path": "/pipeline-studio",
+  "wait": 1500
+ },
+ {
+  "name": "mlops-pipeline-builder",
+  "path": "/pipeline-studio/pl-release",
+  "wait": 3000
+ },
+ {
+  "name": "mlops-request-path",
+  "path": "/pipeline-studio/request-path",
+  "wait": 3000
+ },
+ {
+  "name": "mlops-request-path-simulate",
+  "path": "/pipeline-studio/request-path",
+  "wait": 3000,
+  "actions": [
+   {
+    "click": "button:has-text('Simulate')"
+   },
+   {
+    "wait": 500
+   }
+  ]
+ },
+ {
+  "name": "mlops-request-path-denied",
+  "path": "/pipeline-studio/request-path",
+  "wait": 3000,
+  "actions": [
+   {
+    "click": "button:has-text('Simulate')"
+   },
+   {
+    "click": "text=Denied by policy"
+   },
+   {
+    "wait": 5000
+   }
+  ]
+ },
+ {
+  "name": "mlops-pipelines",
+  "path": "/mlops/pipelines",
+  "wait": 1500
+ },
+ {
+  "name": "mlops-pipeline-detail",
+  "path": "/mlops/pipelines/pl-release",
+  "wait": 2500
+ },
+ {
+  "name": "mlops-runs",
+  "path": "/mlops/runs",
+  "wait": 1500
+ },
+ {
+  "name": "mlops-deployments",
+  "path": "/mlops/deployments",
+  "wait": 2000
+ },
+ {
+  "name": "mlops-deployment-new",
+  "path": "/mlops/deployments/new",
+  "wait": 2000
+ },
+ {
+  "name": "mlops-deployment-detail",
+  "path": "/mlops/deployments/dep-prod",
+  "wait": 2500
+ },
+ {
+  "name": "mlops-gpu",
+  "path": "/mlops/gpu",
+  "wait": 2000
+ },
+ {
+  "name": "mlops-functions",
+  "path": "/mlops/functions",
+  "wait": 2000
+ },
+ {
+  "name": "mlops-build-agents",
+  "path": "/mlops/build-agents",
+  "wait": 1500
+ },
+ {
+  "name": "mlops-integrations",
+  "path": "/mlops/integrations",
+  "wait": 2000
+ },
+ {
+  "name": "mlops-mcp-servers",
+  "path": "/mlops/mcp-servers",
+  "wait": 1500
+ },
+ {
+  "name": "mlops-learn",
+  "path": "/mlops/learn",
+  "wait": 1500
+ }
+]

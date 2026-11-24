@@ -1,0 +1,55 @@
+[
+ {
+  "name": "models-providers",
+  "path": "/providers",
+  "wait": 1500
+ },
+ {
+  "name": "models-provider-new",
+  "path": "/providers/new",
+  "wait": 1200
+ },
+ {
+  "name": "models-provider-detail",
+  "path": "/providers/openai-primary",
+  "wait": 2000
+ },
+ {
+  "name": "models-registry",
+  "path": "/models",
+  "wait": 1200
+ },
+ {
+  "name": "models-versions",
+  "path": "/mlops/models",
+  "wait": 1500
+ },
+ {
+  "name": "models-knowledge",
+  "path": "/mlops/knowledge",
+  "wait": 1500
+ },
+ {
+  "name": "models-knowledge-new",
+  "path": "/mlops/knowledge/new",
+  "wait": 1500
+ },
+ {
+  "name": "models-knowledge-detail",
+  "path": "/mlops/knowledge",
+  "wait": 1200,
+  "actions": [
+   {
+    "click": "text=Support articles"
+   },
+   {
+    "wait": 2500
+   }
+  ]
+ },
+ {
+  "name": "models-data-services",
+  "path": "/mlops/data-services",
+  "wait": 1500
+ }
+]

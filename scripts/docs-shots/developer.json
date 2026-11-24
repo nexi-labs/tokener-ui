@@ -1,0 +1,5 @@
+[
+ {"name":"developer-api-keys","path":"/api-keys","wait":2000},
+ {"name":"developer-service-accounts","path":"/service-accounts","wait":2000},
+ {"name":"developer-sdks","path":"/sdks","wait":1500}
+]

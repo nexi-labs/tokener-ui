@@ -1,0 +1,62 @@
+[
+ {
+  "name": "platform-system-settings",
+  "path": "/settings",
+  "role": "operator",
+  "wait": 1500
+ },
+ {
+  "name": "platform-cluster",
+  "path": "/cluster",
+  "role": "operator",
+  "wait": 1500
+ },
+ {
+  "name": "platform-connectors",
+  "path": "/platform/connectors",
+  "role": "operator",
+  "wait": 6000
+ },
+ {
+  "name": "platform-library",
+  "path": "/platform/library",
+  "role": "operator",
+  "wait": 2000
+ },
+ {
+  "name": "platform-plans",
+  "path": "/platform/plans",
+  "role": "operator",
+  "wait": 2000
+ },
+ {
+  "name": "platform-access-requests",
+  "path": "/access-requests",
+  "role": "operator",
+  "wait": 2000
+ },
+ {
+  "name": "platform-approvals",
+  "path": "/platform/approvals",
+  "role": "operator",
+  "wait": 2000
+ },
+ {
+  "name": "platform-roles",
+  "path": "/roles",
+  "role": "operator",
+  "wait": 2000
+ },
+ {
+  "name": "platform-feature-flags",
+  "path": "/feature-flags",
+  "role": "operator",
+  "wait": 1500
+ },
+ {
+  "name": "platform-health",
+  "path": "/health",
+  "role": "operator",
+  "wait": 1500
+ }
+]

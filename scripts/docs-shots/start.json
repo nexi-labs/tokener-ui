@@ -1,0 +1,40 @@
+[
+ {
+  "name": "start-dashboard",
+  "path": "/dashboard"
+ },
+ {
+  "name": "start-sidebar-open",
+  "path": "/dashboard",
+  "actions": [
+   {
+    "click": "text=Governance"
+   },
+   {
+    "click": "text=Agent OS"
+   }
+  ],
+  "clip": [
+   0,
+   0,
+   288,
+   900
+  ]
+ },
+ {
+  "name": "start-api-keys",
+  "path": "/api-keys"
+ },
+ {
+  "name": "start-usage",
+  "path": "/usage"
+ },
+ {
+  "name": "start-trace",
+  "path": "/trace-studio"
+ },
+ {
+  "name": "start-org-roles",
+  "path": "/org-roles"
+ }
+]

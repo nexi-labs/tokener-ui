@@ -1,0 +1,15 @@
+[
+ {"name":"crucible-overview","path":"/crucible","wait":2000},
+ {"name":"crucible-projects","path":"/crucible/projects","wait":1500},
+ {"name":"crucible-project-detail","path":"/crucible/projects","wait":1200,"actions":[{"click":"tbody a"},{"wait":2000}]},
+ {"name":"crucible-experiments","path":"/crucible/experiments","wait":1500},
+ {"name":"crucible-experiment-detail","path":"/crucible/experiments/exp-support","wait":2000},
+ {"name":"crucible-run","path":"/crucible/runs/run-2291","wait":2000},
+ {"name":"crucible-datasets","path":"/crucible/datasets","wait":1500},
+ {"name":"crucible-storage","path":"/crucible/storage","wait":1500},
+ {"name":"crucible-lineage","path":"/crucible/lineage","wait":2500},
+ {"name":"crucible-jobs","path":"/crucible/jobs","wait":1500},
+ {"name":"crucible-continuous","path":"/crucible/continuous","wait":2000},
+ {"name":"crucible-memory","path":"/crucible/memory","wait":1500},
+ {"name":"crucible-adapters","path":"/crucible/adapters","wait":1500}
+]

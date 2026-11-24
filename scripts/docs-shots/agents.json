@@ -1,0 +1,127 @@
+[
+ {
+  "name": "agents-control-arena",
+  "path": "/agents",
+  "wait": 1500
+ },
+ {
+  "name": "agents-constellation",
+  "path": "/agents/constellation",
+  "wait": 2000
+ },
+ {
+  "name": "agents-registry",
+  "path": "/agents/registry",
+  "wait": 1200
+ },
+ {
+  "name": "agents-detail",
+  "path": "/agents/registry/agt_02",
+  "wait": 1500
+ },
+ {
+  "name": "agents-detail-runtime",
+  "path": "/agents/registry/agt_01",
+  "wait": 1200,
+  "actions": [
+   {
+    "click": "role=tab[name='Runtime']"
+   },
+   {
+    "wait": 500
+   },
+   {
+    "scrollTo": "text=How it calls tools"
+   },
+   {
+    "scroll": 200
+   },
+   {
+    "wait": 400
+   }
+  ]
+ },
+ {
+  "name": "agents-detail-governance",
+  "path": "/agents/registry/agt_02",
+  "wait": 1200,
+  "actions": [
+   {
+    "click": "role=tab[name='Governance']"
+   },
+   {
+    "wait": 500
+   }
+  ]
+ },
+ {
+  "name": "agents-approvals",
+  "path": "/agents/approvals",
+  "wait": 1500
+ },
+ {
+  "name": "agents-traces",
+  "path": "/agents/traces",
+  "wait": 1500
+ },
+ {
+  "name": "agents-evals",
+  "path": "/agents/evals",
+  "wait": 1500
+ },
+ {
+  "name": "agents-forge",
+  "path": "/agents/forge",
+  "wait": 1500
+ },
+ {
+  "name": "agents-conductor",
+  "path": "/agents/conductor",
+  "wait": 1500
+ },
+ {
+  "name": "agents-context",
+  "path": "/agents/context",
+  "wait": 1500
+ },
+ {
+  "name": "agents-adapters",
+  "path": "/agents/adapters",
+  "wait": 1500
+ },
+ {
+  "name": "agents-cli",
+  "path": "/agents/cli",
+  "wait": 1200
+ },
+ {
+  "name": "agents-protocols",
+  "path": "/agents/protocols",
+  "wait": 1200
+ },
+ {
+  "name": "agents-code-mode",
+  "path": "/agents/registry/agt_01",
+  "wait": 1200,
+  "actions": [
+   {
+    "click": "role=tab[name='Runtime']"
+   },
+   {
+    "wait": 500
+   },
+   {
+    "click": "button:has-text('Code Mode')"
+   },
+   {
+    "wait": 500
+   },
+   {
+    "scrollTo": "text=Where the program runs"
+   },
+   {
+    "wait": 400
+   }
+  ]
+ }
+]

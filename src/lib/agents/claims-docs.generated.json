@@ -1,0 +1,363 @@
+{
+ "CLM-24-00871": {
+  "pdf": "/samples/claims/CLM-24-00871.pdf",
+  "pages": [
+   "/samples/claims/CLM-24-00871-p1.webp",
+   "/samples/claims/CLM-24-00871-p2.webp",
+   "/samples/claims/CLM-24-00871-p3.webp"
+  ],
+  "fields": [
+   {
+    "key": "policy",
+    "page": 1,
+    "box": [
+     0.5311,
+     0.1854,
+     0.1495,
+     0.0176
+    ],
+    "text": "HP-HOM-558201"
+   },
+   {
+    "key": "claimant",
+    "page": 1,
+    "box": [
+     0.0706,
+     0.2376,
+     0.132,
+     0.0176
+    ],
+    "text": "Amira Haddad"
+   },
+   {
+    "key": "lossDate",
+    "page": 1,
+    "box": [
+     0.0706,
+     0.3327,
+     0.1496,
+     0.0176
+    ],
+    "text": "28 October 2026"
+   },
+   {
+    "key": "reportedOn",
+    "page": 1,
+    "box": [
+     0.5311,
+     0.3327,
+     0.1496,
+     0.0176
+    ],
+    "text": "29 October 2026"
+   },
+   {
+    "key": "cause",
+    "page": 1,
+    "box": [
+     0.0706,
+     0.3849,
+     0.2358,
+     0.0176
+    ],
+    "text": "Escaped water, burst pipe"
+   },
+   {
+    "key": "invoiceDate",
+    "page": 2,
+    "box": [
+     0.5311,
+     0.1854,
+     0.1496,
+     0.0176
+    ],
+    "text": "30 October 2026"
+   },
+   {
+    "key": "contractor",
+    "page": 2,
+    "box": [
+     0.5311,
+     0.2471,
+     0.2347,
+     0.0176
+    ],
+    "text": "Brightline Restoration Ltd"
+   },
+   {
+    "key": "amount",
+    "page": 2,
+    "box": [
+     0.7599,
+     0.5324,
+     0.1561,
+     0.0208
+    ],
+    "text": "Total  7,420.00"
+   },
+   {
+    "key": "limit",
+    "page": 3,
+    "box": [
+     0.5311,
+     0.2376,
+     0.1074,
+     0.0176
+    ],
+    "text": "USD 25,000"
+   },
+   {
+    "key": "excess",
+    "page": 3,
+    "box": [
+     0.0706,
+     0.2899,
+     0.0817,
+     0.0176
+    ],
+    "text": "USD 500"
+   }
+  ],
+  "size": [
+   595.0,
+   842.0
+  ]
+ },
+ "CLM-24-00902": {
+  "pdf": "/samples/claims/CLM-24-00902.pdf",
+  "pages": [
+   "/samples/claims/CLM-24-00902-p1.webp",
+   "/samples/claims/CLM-24-00902-p2.webp",
+   "/samples/claims/CLM-24-00902-p3.webp"
+  ],
+  "fields": [
+   {
+    "key": "policy",
+    "page": 1,
+    "box": [
+     0.5311,
+     0.1854,
+     0.1608,
+     0.0176
+    ],
+    "text": "MV-AUTO-771034"
+   },
+   {
+    "key": "claimant",
+    "page": 1,
+    "box": [
+     0.0706,
+     0.2376,
+     0.1239,
+     0.0176
+    ],
+    "text": "Daniel Okoye"
+   },
+   {
+    "key": "lossDate",
+    "page": 1,
+    "box": [
+     0.0706,
+     0.3327,
+     0.1588,
+     0.0176
+    ],
+    "text": "2 November 2026"
+   },
+   {
+    "key": "reportedOn",
+    "page": 1,
+    "box": [
+     0.5311,
+     0.3327,
+     0.1588,
+     0.0176
+    ],
+    "text": "3 November 2026"
+   },
+   {
+    "key": "cause",
+    "page": 1,
+    "box": [
+     0.0706,
+     0.3849,
+     0.2522,
+     0.0176
+    ],
+    "text": "Collision, third party at fault"
+   },
+   {
+    "key": "invoiceDate",
+    "page": 2,
+    "box": [
+     0.5311,
+     0.1854,
+     0.1496,
+     0.0176
+    ],
+    "text": "30 October 2026"
+   },
+   {
+    "key": "contractor",
+    "page": 2,
+    "box": [
+     0.5311,
+     0.2471,
+     0.1834,
+     0.0176
+    ],
+    "text": "Ashgrove Autobody"
+   },
+   {
+    "key": "amount",
+    "page": 2,
+    "box": [
+     0.7477,
+     0.511,
+     0.1683,
+     0.0208
+    ],
+    "text": "Total  12,980.00"
+   },
+   {
+    "key": "limit",
+    "page": 3,
+    "box": [
+     0.5311,
+     0.2376,
+     0.2297,
+     0.0176
+    ],
+    "text": "Market value, USD 21,000"
+   },
+   {
+    "key": "excess",
+    "page": 3,
+    "box": [
+     0.0706,
+     0.2899,
+     0.0817,
+     0.0176
+    ],
+    "text": "USD 750"
+   }
+  ],
+  "size": [
+   595.0,
+   842.0
+  ]
+ },
+ "CLM-24-00915": {
+  "pdf": "/samples/claims/CLM-24-00915.pdf",
+  "pages": [
+   "/samples/claims/CLM-24-00915-p1.webp",
+   "/samples/claims/CLM-24-00915-p2.webp",
+   "/samples/claims/CLM-24-00915-p3.webp"
+  ],
+  "fields": [
+   {
+    "key": "policy",
+    "page": 1,
+    "box": [
+     0.5311,
+     0.1854,
+     0.1434,
+     0.0176
+    ],
+    "text": "TR-SGL-330917"
+   },
+   {
+    "key": "claimant",
+    "page": 1,
+    "box": [
+     0.0706,
+     0.2376,
+     0.1054,
+     0.0176
+    ],
+    "text": "Lena Vogel"
+   },
+   {
+    "key": "lossDate",
+    "page": 1,
+    "box": [
+     0.0706,
+     0.3327,
+     0.1588,
+     0.0176
+    ],
+    "text": "5 November 2026"
+   },
+   {
+    "key": "reportedOn",
+    "page": 1,
+    "box": [
+     0.5311,
+     0.3327,
+     0.1588,
+     0.0176
+    ],
+    "text": "9 November 2026"
+   },
+   {
+    "key": "cause",
+    "page": 1,
+    "box": [
+     0.0706,
+     0.3849,
+     0.2091,
+     0.0176
+    ],
+    "text": "Baggage lost by airline"
+   },
+   {
+    "key": "amount",
+    "page": 2,
+    "box": [
+     0.6724,
+     0.3281,
+     0.2435,
+     0.0208
+    ],
+    "text": "Total claimed  1,150.00"
+   },
+   {
+    "key": "contractor",
+    "page": 2,
+    "box": [
+     0.0706,
+     0.3968,
+     0.4003,
+     0.0176
+    ],
+    "text": "Received 8 November 2026, report LIS-55012"
+   },
+   {
+    "key": "limit",
+    "page": 3,
+    "box": [
+     0.5311,
+     0.2376,
+     0.2595,
+     0.0176
+    ],
+    "text": "USD 2,000, USD 500 per item"
+   },
+   {
+    "key": "excess",
+    "page": 3,
+    "box": [
+     0.0706,
+     0.2899,
+     0.0714,
+     0.0176
+    ],
+    "text": "USD 50"
+   }
+  ],
+  "size": [
+   595.0,
+   842.0
+  ]
+ }
+}

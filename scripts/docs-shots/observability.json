@@ -1,0 +1,14 @@
+[
+ {
+  "name": "observability-analytics",
+  "path": "/analytics"
+ },
+ {
+  "name": "observability-audit",
+  "path": "/audit"
+ },
+ {
+  "name": "observability-mlops",
+  "path": "/mlops/observability"
+ }
+]

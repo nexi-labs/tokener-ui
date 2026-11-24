@@ -1,0 +1,10 @@
+[
+ {"name":"organization-tenants","path":"/tenants","wait":2000},
+ {"name":"organization-tenant-new","path":"/tenants","wait":1500,"actions":[{"click":"button:has-text('New tenant')"},{"wait":800}]},
+ {"name":"organization-people","path":"/people","wait":2000},
+ {"name":"organization-roles","path":"/org-roles","wait":2000},
+ {"name":"organization-billing","path":"/billing","wait":2000},
+ {"name":"organization-payments","path":"/mlops/payments","wait":2000},
+ {"name":"organization-notifications","path":"/notifications","wait":2000},
+ {"name":"organization-account","path":"/account","wait":1500}
+]

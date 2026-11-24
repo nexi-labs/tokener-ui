@@ -1,0 +1,153 @@
+import type { DocSection } from "../types";
+
+export const ORGANIZATION: DocSection = {
+  id: "organization",
+  title: "Organization",
+  blurb: "Set up your tenants, people, roles, billing and the channels that tell you when something happens.",
+  pages: [
+    {
+      slug: "tenants",
+      title: "Tenant Management",
+      summary: "A tenant is the isolation boundary inside an organization: its own people, budgets, policies and keys. Create tenants, then departments, projects and applications inside them.",
+      console: "/tenants",
+      role: "admin",
+      blocks: [
+        { t: "tree", root: { label: "Organization", sub: "Your company", children: [{ label: "Tenant", sub: "A team or an environment, with a home region", children: [{ label: "Department", children: [{ label: "Project", children: [{ label: "Application", sub: "Gets an API key" }] }] }] }] }, caption: "Budgets, quotas and policies attach at any of these levels. Applications are what hold API keys." },
+        { t: "shot", src: "organization-tenants", alt: "Tenant Management with the path Organization, Tenant, Department, Project then Application, and a table of tenants with home region and identifier", caption: "Tenants of Nexi Corp with their home region." },
+        { t: "p", text: "The **home region** is where the tenant's data stays. Open a tenant to see its departments, projects and applications. Creating an application issues its API key, shown once." },
+        { t: "steps", items: [
+          { title: "Create a tenant", body: "Select **New tenant**. Enter a **Name**, usually a team or an environment such as Customer Support, and choose the **Home region**.", shot: "organization-tenant-new", alt: "The New tenant dialog with a name and a home region menu" },
+          { title: "Add departments and projects", body: "Open the tenant, then add a department and the projects inside it. Budgets and quotas can target any level." },
+          { title: "Add an application", body: "In a project, create an application. Its API key is shown once. See [API Keys](/docs/developer/api-keys)." },
+        ] },
+        { t: "callout", tone: "sample", text: "The sample workspace shows five sample tenants and nothing you create is saved to a real organization. A signed-in account that is not part of an organization says so, and a platform operator works across organizations from Platform Administration." },
+        { t: "cards", items: [{ title: "People and access", body: "Give people roles at a tenant.", href: "/docs/organization/people" }, { title: "Budgets", body: "Limit a tenant's spend.", href: "/docs/governance/budgets" }] },
+      ],
+    },
+    {
+      slug: "people",
+      title: "People and access",
+      summary: "Who can sign in to your organization and what they can do. Each person has one or more roles, and a role applies to the whole organization or to one tenant.",
+      console: "/people",
+      role: "admin",
+      blocks: [
+        { t: "shot", src: "organization-people", alt: "People and access with a table of people showing status, roles with where each applies, and last sign-in", caption: "People, their status and roles. Each role shows where it applies." },
+        { t: "h2", text: "Invite someone" },
+        { t: "steps", items: [
+          { title: "Invite person", body: "Select **Invite person**. Enter their **Name** and **Email address**." },
+          { title: "Give a role", body: "Choose a **Role** and where it **Applies to**: the whole organization, or one **Tenant**. A tenant role only applies inside that tenant. Give the person at least one role, or disable the account instead. You can only give a role you hold yourself at that place." },
+          { title: "They set a password", body: "They get an email with a link to set a password. The link works once and expires." },
+        ] },
+        { t: "h2", text: "Manage a person" },
+        { t: "table", head: ["Action", "Effect"], rows: [
+          ["Edit roles", "Add or remove a role and where it applies. An organization always keeps at least one organization admin."],
+          ["Disable", "They are signed out and cannot sign in until you enable the account again. Their roles are kept."],
+          ["Status", "**Active**, **Invited** (has not signed in yet) or **Disabled**."],
+        ] },
+        { t: "callout", tone: "sample", text: "The sample workspace shows sample people and sends nothing. Search by name or email narrows the list." },
+        { t: "cards", items: [{ title: "Roles and permissions", body: "What each role allows.", href: "/docs/organization/roles" }, { title: "Roles and access", body: "How access works across the console.", href: "/docs/start/roles-and-access" }] },
+      ],
+    },
+    {
+      slug: "roles",
+      title: "Roles and permissions",
+      summary: "Who can do what, and where, inside your organization. Built-in roles come from the platform; groups let you give a role to many people at once.",
+      console: "/org-roles",
+      role: "admin",
+      blocks: [
+        { t: "shot", src: "organization-roles", alt: "Roles and permissions with counters for roles, groups, grants and people, tabs for Roles, Groups, Assignments and Check access, and a permission grid for the Organization admin role", caption: "Built-in roles on the left, and the permissions each one carries on the right." },
+        { t: "table", head: ["Tab", "What it does"], rows: [
+          ["**Roles**", "The built-in roles (for example Organization admin, Tenant admin, Finance, Security auditor, Developer, Viewer) and any custom roles. A grid shows the permissions a role carries and where it can be granted. Built-in roles cannot be changed. To get something different, make a role of your own from the permissions you need with **New role**."],
+          ["**Groups**", "A group is a set of people you give a role to once. Approvals, owners and escalations can name a group, so an agent never depends on one person."],
+          ["**Assignments**", "Who holds which role, directly or through a group, and at which place: the organization, a tenant, a department or a project."],
+          ["**Check access**", "Pick a person, a permission and a place. The page says whether they can, and why not: no role they hold, directly or through a group, covers this place and includes this permission."],
+        ] },
+        { t: "callout", tone: "note", title: "What is live", text: "The built-in roles and their holders are live and are changed in [People and access](/docs/organization/people), so nobody is granted twice. Custom roles, groups and grants are saved through the organization roles API, which is not available for every workspace yet, and the page says so when it is not." },
+        { t: "cards", items: [{ title: "Role Management", body: "The platform's fixed role list.", href: "/docs/platform/role-management" }, { title: "People and access", body: "Give a role.", href: "/docs/organization/people" }] },
+      ],
+    },
+    {
+      slug: "billing",
+      title: "Billing",
+      summary: "Payment details, what you use and what it costs, and invoices. Usage accrues hourly and is invoiced monthly in arrears.",
+      console: "/billing",
+      role: "admin",
+      blocks: [
+        { t: "shot", src: "organization-billing", alt: "Billing and payment with a free start credit of 161.60 dollars, a promotional balance, a payment method and a billing contact", caption: "Payment details and contacts: free start credit, promo balance, payment method and billing contact." },
+        { t: "table", head: ["Tab", "What it holds"], rows: [
+          ["**Payment details and contacts**", "The free start credit and days left, a **Promotional balance** with **Add promo code**, the payment method (a credit or debit card, or a US bank account; prepaid cards are not supported), the **Billing contact** email and the billing address."],
+          ["**Usage and cost**", "What you used and what it costs, by resource and environment. Billing starts when you create a resource and stops when you delete it."],
+          ["**Invoices**", "Your invoices. The first is created at the start of the month after your free credit is used. Usage covered by free credit is not invoiced."],
+          ["**Commitment and marketplace**", "Usage accrued against a commitment, if you have one."],
+        ] },
+        { t: "list", items: [
+          "Accrual is hourly, and part of an hour is billed as a full hour. All calculations use UTC.",
+          "Promo credit is applied after the free start credit and before any charge to your payment method.",
+          "Without a payment method, the organization is suspended when free or promo credit is used or expires, which can interrupt work and make data unreachable. Add one before that.",
+          "Only organization admins and finance can see and change billing details.",
+        ] },
+        { t: "callout", tone: "note", text: "Billing is not one of the screens verified against a live billing service in this release. In the sample workspace the amounts shown are examples." },
+        { t: "cards", items: [{ title: "Payments", body: "Money your pipelines move.", href: "/docs/organization/payments" }, { title: "Budgets", body: "Control AI spend.", href: "/docs/governance/budgets" }] },
+      ],
+    },
+    {
+      slug: "payments",
+      title: "Payments",
+      summary: "Payments that your agents and pipelines collect through providers, what each provider reported, and what a person still has to decide.",
+      console: "/mlops/payments",
+      role: "approver",
+      blocks: [
+        { t: "p", text: "Some pipelines and agents take or send money, for example a payment link agent. Payments lists every payment, in which provider and environment, and what state it is in. The provider confirms money, never the customer's say-so. Refunds need a second person." },
+        { t: "shot", src: "organization-payments", alt: "Payments with counters for payments, needs review, refunds awaiting approval and received and settled, and a table of orders with provider, amount, state and environment", caption: "Orders with the provider, amount and state." },
+        { t: "list", items: [
+          "**Counters**: **Payments**, **Needs review** (held until an approver decides), **Refunds awaiting approval** and **Received and settled**, per currency.",
+          "**State**: **Pending**, **Needs review**, **Paid** or **Blocked**.",
+          "A person with the approver role decides a payment that needs review or approves a refund.",
+        ] },
+        { t: "callout", tone: "sample", text: "Payments runs in the sample workspace against sandbox providers such as PayPal and MTN MoMo. No real money moves, and no connector has been run against a live payment provider from this workspace." },
+        { t: "cards", items: [{ title: "Integrations", body: "Add a payment connection.", href: "/docs/mlops/integrations" }, { title: "Approvals", body: "Approvals for agents.", href: "/docs/agents/approvals" }] },
+      ],
+    },
+    {
+      slug: "notifications",
+      title: "Notification Center",
+      summary: "Where platform events are delivered: channels, the rules that route events to them, and what was sent.",
+      console: "/notifications",
+      role: "admin",
+      blocks: [
+        { t: "shot", src: "organization-notifications", alt: "Notification Center with a tenant picker and cards for email, Slack, Teams and Discord channels, each with Send test and Disable", caption: "Channels for the chosen tenant." },
+        { t: "flow", steps: [
+          { label: "Event", sub: "A budget breach, a provider change, an approval", tone: "muted" },
+          { label: "Rule", sub: "Event, optional condition such as action=BLOCK", tone: "accent" },
+          { label: "Channel", sub: "Email, Slack, Teams, Discord or webhook", tone: "ink" },
+          { label: "Delivery", sub: "What was sent and whether it arrived" },
+        ], caption: "Without a rule, no event is delivered." },
+        { t: "steps", items: [
+          { title: "Add a channel", body: "Select **Add channel**. Choose a **Type**, give it a **Name** and the address. A webhook address is a credential, since it carries its own token. It is stored in the platform's secret manager, the channel keeps only a reference and the address is never shown again after you add it." },
+          { title: "Test it", body: "**Send test** sends a message to the channel so you know it arrives. **Disable** switches a channel off." },
+          { title: "Add a rule", body: "A rule names the **Event**, an optional **Condition** (for example `action=BLOCK`) and where to **Send to**, with a **Subject** and **Message**." },
+          { title: "Check deliveries", body: "Deliveries appear after a rule fires or a test is sent." },
+        ] },
+        { t: "callout", tone: "note", text: "If no secret manager is configured, email channels still work and the other types cannot be added. SMS channels are not offered here." },
+        { t: "cards", items: [{ title: "Budgets", body: "Warnings come from budgets.", href: "/docs/governance/budgets" }] },
+      ],
+    },
+    {
+      slug: "account-settings",
+      title: "Account settings",
+      summary: "Your profile, how you sign in, and the organization you work in.",
+      console: "/account",
+      role: "viewer",
+      blocks: [
+        { t: "shot", src: "organization-account", alt: "Account settings with a Profile tab showing full name and email, and a sign-in card", caption: "Your profile." },
+        { t: "table", head: ["Tab", "What it holds"], rows: [
+          ["**Profile**", "Your **Full name**, shown to your teammates and in the audit trail, and your **Email**. Your email is how you sign in; to change it, contact your organization admin. A **Sign-in** card shows the method, your last sign-in and when you became a member."],
+          ["**Security**", "Change your password with **Current password** and **New password**. Passwords are not used in the sample workspace."],
+          ["**Organization**", "The workspace your teams, budgets and pipelines belong to, with the **Organization ID** you can copy, **Your access** (your roles) and billing details if you can see them."],
+        ] },
+        { t: "p", text: "A platform operator's account is not part of an organization; operators work across organizations from Platform Administration." },
+        { t: "cards", items: [{ title: "Roles and access", body: "What you can do.", href: "/docs/start/roles-and-access" }] },
+      ],
+    },
+  ],
+};

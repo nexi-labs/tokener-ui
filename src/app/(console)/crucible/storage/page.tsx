@@ -1,5 +1,8 @@
 "use client";
 
+import { useCrucibleStatus } from "@/lib/crucible/live/store";
+import { LiveStorage } from "@/components/crucible/live/Storage";
+
 import { useState } from "react";
 import { Check, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
@@ -16,7 +19,7 @@ import { ago, int } from "@/lib/agents/format";
 
 const gbFmt = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1)} TB` : `${int(n)} GB`);
 
-export default function Storage() {
+function SampleStorage() {
   const { stores, projects } = useCrucible(); const role = useRole();
   const [add, setAdd] = useState(false); const [openId, setOpenId] = useState<string | null>(null); const [rm, setRm] = useState<ArtifactStore | null>(null);
   const [result, setResult] = useState<{ id: string; out: TestOutcome } | null>(null);
@@ -96,4 +99,9 @@ function AddStore({ onClose }: { onClose: () => void }) {
       </div>
     </Modal>
   );
+}
+
+/** A signed-in workspace shows what the training service returns. The sample workspace keeps its own screen. */
+export default function Storage() {
+  return useCrucibleStatus().connected ? <LiveStorage /> : <SampleStorage />;
 }

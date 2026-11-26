@@ -224,6 +224,7 @@ export const CRUCIBLE_PAGES: NavItem[] = [
   { label: "Storage", href: "/crucible/storage", icon: HardDrive },
   { label: "Memory planner", href: "/crucible/memory", icon: MemoryStick },
   { label: "Adapters", href: "/crucible/adapters", icon: Cpu },
+  { label: "Activity", href: "/crucible/activity", icon: ScrollText },
 ];
 
 /** Agent OS pages reached through its in-page tab bar. They exist here so breadcrumbs resolve. */

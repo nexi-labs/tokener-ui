@@ -17,6 +17,7 @@ import { METRIC_BY_ID, executionSummary, triggerLines } from "@/lib/agents/execu
 import { compact, dur, int, pct, usd } from "@/lib/agents/format";
 import { HEALTH_LABEL, POLICY_BY_ID, PROTOCOL_BY_ID, healthOf, policiesFor } from "@/lib/agents/topology";
 import { toast } from "@/lib/mlops/toast";
+import { SwitchRuntimeButton } from "@/components/agents/SwitchRuntime";
 import type { Agent } from "@/lib/agents/types";
 
 export type Selection = { kind: "agent" | "link" | "group" | "resource"; id: string };
@@ -164,7 +165,7 @@ function RunsAs({ a, now }: { a: Agent; now?: number }) {
   const lines = triggerLines(e);
   return (
     <div className="rounded-md border border-border">
-      <div className="px-3 py-2.5 border-b border-border"><div className="text-[13px] font-medium">Runs as</div><div className="text-xs text-text-secondary mt-0.5">{executionSummary(e)}</div>
+      <div className="px-3 py-2.5 border-b border-border"><div className="flex items-center justify-between gap-2"><div className="text-[13px] font-medium">Runs as</div><SwitchRuntimeButton a={a} compact /></div><div className="text-xs text-text-secondary mt-0.5">{executionSummary(e)}</div>
         {lines.length > 0 && <ul className="mt-1.5 space-y-0.5 text-[11.5px] text-text-tertiary">{lines.slice(0, 3).map((l, i) => <li key={i} className="truncate">{l.text}</li>)}</ul>}</div>
       {e.runtime !== "external" ? (
         <div className="px-3 py-2.5 space-y-2.5">

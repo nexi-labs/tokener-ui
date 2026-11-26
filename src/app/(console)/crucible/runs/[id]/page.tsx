@@ -1,5 +1,8 @@
 "use client";
 
+import { useCrucibleStatus } from "@/lib/crucible/live/store";
+import { LiveRun } from "@/components/crucible/live/Run";
+
 import Link from "next/link";
 import { use, useMemo, useState } from "react";
 import { ChevronLeft, Package } from "lucide-react";
@@ -32,7 +35,7 @@ function planFromRun(p: Record<string, string | number | boolean>, gpus: number,
     seqLen: Number(p.seq_len ?? 2048), microBatch: Number(p.micro_batch ?? 4), accum: Number(p.accum ?? 4), trainableFrac: p.rank ? Math.min(0.05, Number(p.rank) * 0.00016) : 0.01 };
 }
 
-export default function RunPage({ params }: { params: Promise<{ id: string }> }) {
+function SampleRunPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { runs, experiments, jobs } = useCrucible();
   const role = useRole();
@@ -169,4 +172,9 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
       </Modal>
     </div>
   );
+}
+
+/** A signed-in workspace shows what the training service returns. The sample workspace keeps its own screen. */
+export default function RunPage(props: { params: Promise<{ id: string }> }) {
+  return useCrucibleStatus().connected ? <LiveRun {...props} /> : <SampleRunPage {...props} />;
 }

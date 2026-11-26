@@ -1,5 +1,8 @@
 "use client";
 
+import { useCrucibleStatus } from "@/lib/crucible/live/store";
+import { LiveProject } from "@/components/crucible/live/Project";
+
 import Link from "next/link";
 import { use, useMemo, useState } from "react";
 import { ChevronLeft, FolderGit2, KeyRound, Laptop, Plus, RotateCw } from "lucide-react";
@@ -19,7 +22,7 @@ import { ago } from "@/lib/agents/format";
 type Tab = "connect" | "machines" | "keys" | "file" | "runs";
 type Snip = "python" | "env" | "mlflow" | "cli";
 
-export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+function SampleProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params); const st = useCrucible(); const role = useRole();
   const p = st.projects.find((x) => x.id === id); const [tab, setTab] = useState<Tab>("connect"); const [snip, setSnip] = useState<Snip>("python");
   const [keyModal, setKeyModal] = useState(false); const [machineModal, setMachineModal] = useState(false);
@@ -126,4 +129,9 @@ function MachineModal({ projectId, onClose }: { projectId: string; onClose: () =
       </div>
     </Modal>
   );
+}
+
+/** A signed-in workspace shows what the training service returns. The sample workspace keeps its own screen. */
+export default function ProjectPage(props: { params: Promise<{ id: string }> }) {
+  return useCrucibleStatus().connected ? <LiveProject {...props} /> : <SampleProjectPage {...props} />;
 }

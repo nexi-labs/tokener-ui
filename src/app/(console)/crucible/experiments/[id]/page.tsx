@@ -1,5 +1,8 @@
 "use client";
 
+import { useCrucibleStatus } from "@/lib/crucible/live/store";
+import { LiveExperiment } from "@/components/crucible/live/Experiments";
+
 import Link from "next/link";
 import { use, useMemo, useState } from "react";
 import { ChevronLeft, FlaskConical } from "lucide-react";
@@ -19,7 +22,7 @@ import { ago, usd } from "@/lib/agents/format";
 type Tab = "runs" | "charts" | "compare";
 const COLORS: Ser["color"][] = ["s1", "s2", "s3", "grey"];
 
-export default function ExperimentPage({ params }: { params: Promise<{ id: string }> }) {
+function SampleExperimentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { experiments, runs } = useCrucible();
   const exp = experiments.find((e) => e.id === id);
@@ -123,4 +126,9 @@ export default function ExperimentPage({ params }: { params: Promise<{ id: strin
       )}
     </div>
   );
+}
+
+/** A signed-in workspace shows what the training service returns. The sample workspace keeps its own screen. */
+export default function ExperimentPage(props: { params: Promise<{ id: string }> }) {
+  return useCrucibleStatus().connected ? <LiveExperiment {...props} /> : <SampleExperimentPage {...props} />;
 }

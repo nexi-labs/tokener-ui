@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { connectDemo, connectLive } from "@/lib/mlops/store";
 import { connectRefineryDemo, connectRefineryLive } from "@/lib/refinery/store";
+import { connectCrucibleDemo, connectCrucibleLive } from "@/lib/crucible/live/store";
 
 /**
  * The console needs either a signed-in person or the demo workspace. Anyone else is sent to the sign-in page and returned here afterwards.
@@ -28,9 +29,9 @@ export function ConsoleAuthGate({ children }: { children: React.ReactNode }) {
 
   // Point the data layer at the right source before any screen reads it: the API for a signed-in person, the sample data for the demo.
   useEffect(() => {
-    if (status === "session") { connectLive({ orgId, isPlatform, userEmail: email }); connectRefineryLive({ orgId, isPlatform, userEmail: email }); setSynced(true); }
-    else if (status === "demo") { connectDemo(); connectRefineryDemo(); setSynced(true); }
-    else { connectDemo(); connectRefineryDemo(); setSynced(false); }
+    if (status === "session") { connectLive({ orgId, isPlatform, userEmail: email }); connectRefineryLive({ orgId, isPlatform, userEmail: email }); connectCrucibleLive({ orgId, isPlatform, userEmail: email }); setSynced(true); }
+    else if (status === "demo") { connectDemo(); connectRefineryDemo(); connectCrucibleDemo(); setSynced(true); }
+    else { connectDemo(); connectRefineryDemo(); connectCrucibleDemo(); setSynced(false); }
   }, [status, orgId, isPlatform, email]);
 
   if ((status === "session" || status === "demo") && synced) return <>{children}</>;

@@ -1,6 +1,7 @@
 import type { ForgeSpec } from "./codegen";
 import type { MemoryConfig } from "./memory";
 import type { Execution } from "./execution";
+import type { SwitchEvent } from "./autoswitch";
 import type { Binding } from "./connectors";
 
 /** Governed: every call passes through the gateway. Observed: the agent reports what it did. Inventory: registered by hand, nothing measured. (docs/47, section 4) */
@@ -46,6 +47,10 @@ export type Agent = {
   memory?: MemoryConfig;
   /** The shape of the process and what starts a run. Absent for an agent registered by hand, where tok∑ner does not run anything. */
   execution?: Execution;
+  /** The settings from before the last runtime switch, kept so the switch can be undone. Cleared by the next change to how the agent runs. */
+  lastSwitch?: { from: Execution; to: string; strategy: string; at: string };
+  /** When the agent last changed runtime (on the sample clock) and the recent changes with the reason for each, whether a person or a rule made them. */
+  switching?: { lastSwitchSim?: number; log: SwitchEvent[] };
   /** The project in Tenant Management this agent belongs to. Knowledge bases open to a project are open to its agents. */
   project?: string;
   /** The connections, channels and knowledge bases from the organisation that this agent uses. Some bindings follow from how it starts and who decides. */

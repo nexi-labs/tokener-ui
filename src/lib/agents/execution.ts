@@ -1,4 +1,5 @@
 import { validateToolCalling, type ToolCalling } from "./codemode";
+import { validateAutoSwitch, type AutoSwitch } from "./autoswitch";
 
 /**
  * How an agent runs and what starts it.
@@ -71,6 +72,8 @@ export type Autoscale = { mode: "auto" | "manual"; metric: AutoscaleMetric; targ
 
 export type Execution = {
   runtime: RuntimeKind;
+  /** Moves the agent between runtimes by itself when its load or events say so. Absent or off means it only moves when a person moves it. */
+  autoSwitch?: AutoSwitch;
   /** How the agent calls tools: one call at a time, or by writing a short program that runs in a sandbox. Absent means direct. */
   toolCalling?: ToolCalling;
   scaling: { minReplicas: number; maxReplicas: number; concurrency: number; timeoutSec: number; memoryMb: number; cpu: number; autoscale: Autoscale };
@@ -197,6 +200,7 @@ export type ExecIssue = { path: string; message: string; level: "error" | "warni
 
 export function validateExecution(e: Execution, ctx: { hasSensitiveTools?: boolean; control?: string; toolCount?: number } = {}): ExecIssue[] {
   const out: ExecIssue[] = []; const err = (path: string, message: string) => out.push({ path, message, level: "error" }); const warn = (path: string, message: string) => out.push({ path, message, level: "warning" });
+  out.push(...validateAutoSwitch(e.autoSwitch));
   out.push(...validateToolCalling(e.toolCalling, { control: ctx.control, hasSensitiveTools: ctx.hasSensitiveTools, runtime: e.runtime, toolCount: ctx.toolCount }));
   const rt = RUNTIME_BY_ID[e.runtime]; const on = enabledModes(e);
   if (!on.length) err("modes", "Turn on at least one way to start the agent.");

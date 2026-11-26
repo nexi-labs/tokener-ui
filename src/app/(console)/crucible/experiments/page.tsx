@@ -1,5 +1,8 @@
 "use client";
 
+import { useCrucibleStatus } from "@/lib/crucible/live/store";
+import { LiveExperiments } from "@/components/crucible/live/Experiments";
+
 import Link from "next/link";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/Badge";
@@ -11,7 +14,7 @@ import { useCrucible } from "@/lib/crucible/store";
 import { better } from "@/lib/crucible/sample";
 import { ago, int } from "@/lib/agents/format";
 
-export default function Experiments() {
+function SampleExperiments() {
   const { experiments, runs } = useCrucible();
   const rows = useMemo(() => experiments.map((e) => {
     const rs = runs.filter((r) => r.experimentId === e.id); const key = PRIMARY[e.id];
@@ -47,4 +50,9 @@ export default function Experiments() {
       <p className="text-xs text-text-tertiary mt-3">{runs.length} runs in {experiments.length} experiments. <Badge tone="neutral">Sample</Badge> These are seeded records. Nothing here was trained.</p>
     </div>
   );
+}
+
+/** A signed-in workspace shows what the training service returns. The sample workspace keeps its own screen. */
+export default function Experiments() {
+  return useCrucibleStatus().connected ? <LiveExperiments /> : <SampleExperiments />;
 }

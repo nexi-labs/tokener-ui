@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import NextLink from "next/link";
-import { Activity, AlertTriangle, ChevronDown, ChevronUp, Cloud, ClipboardList, Eye, Hammer, Hourglass, Layers as Stack, Maximize, Pause, Plug, RotateCcw, Search, ShieldCheck, ZoomIn, ZoomOut } from "lucide-react";
+import { Activity, AlertTriangle, ChevronDown, ChevronUp, Cloud, ClipboardList, Eye, Hammer, Hourglass, Layers as Stack, Maximize, Moon, Network, Pause, Plug, RotateCcw, Search, ShieldCheck, Sun, ZoomIn, ZoomOut } from "lucide-react";
 import { NodeIcon } from "@/components/studio/icons";
 import { ADAPTER_BY_ID } from "@/lib/agents/adapters";
 import { liveOf, totals, useAgents } from "@/lib/agents/store";
-import { ROLE_LABEL, layoutResources, usage, type UsageNode } from "@/lib/agents/connectors";
+import { NODE, ROLE_LABEL, layoutResources, usage, type UsageNode } from "@/lib/agents/connectors";
 import { useHub } from "@/lib/agents/hub";
 import { useLive } from "@/lib/agents/useLive";
 import type { AgentFrame } from "@/lib/agents/replay";
@@ -29,7 +29,7 @@ const PREFERRED = ["Customer Support", "Marketing", "Finance", "Legal", "Operati
 const LEGEND_W = 262, PANEL_W = 444;
 
 type View = { x: number; y: number; k: number };
-type Hover = { kind: "agent" | "link" | "group" | "exposure" | "cloud" | "resource"; id: string } | null;
+type Hover = { kind: "agent" | "link" | "group" | "exposure" | "cloud" | "resource" | "band"; id: string } | null;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const ink = "rgb(var(--c-text-primary))";
@@ -38,7 +38,7 @@ const faint = "rgb(var(--c-text-tertiary))";
 const surface = "rgb(var(--c-surface))";
 const border = "rgb(var(--c-border-strong))";
 
-export function Constellation({ initialSelect, trace }: { initialSelect?: string; trace?: string }) {
+export function Constellation({ initialSelect, trace, onSwitchView }: { initialSelect?: string; trace?: string; onSwitchView?: () => void }) {
   const store = useAgents();
   const { agents, links, exposures, policies, traces } = store;
   const live = useMemo(() => liveOf(store), [store]);
@@ -56,6 +56,10 @@ export function Constellation({ initialSelect, trace }: { initialSelect?: string
   const [liveOn, setLiveOn] = useState(true);
   const [filters, setFilters] = useState<{ control: "all" | ControlLevel; dept: string; q: string }>({ control: "all", dept: "all", q: "" });
   const [reduced, setReduced] = useState(false);
+  // The black theme belongs to this canvas only. It is remembered per browser, and the page works without storage.
+  const [dark, setDark] = useState(false);
+  useEffect(() => { try { setDark(localStorage.getItem("tok.constellation.dark") === "1"); } catch { /* storage unavailable */ } }, []);
+  const toggleDark = () => setDark((d) => { const n = !d; try { localStorage.setItem("tok.constellation.dark", n ? "1" : "0"); } catch { /* storage unavailable */ } return n; });
   const fitted = useRef(false);
   const pointer = useRef({ x: 0, y: 0 });
 
@@ -99,6 +103,13 @@ export function Constellation({ initialSelect, trace }: { initialSelect?: string
   const visNodes = useMemo(() => (layers.connectors ? use.nodes.filter((n) => n.agentIds.some((id) => shownIds.has(id))) : []), [use, layers.connectors, shownIds]);
   const visKeys = useMemo(() => new Set(visNodes.map((n) => n.key)), [visNodes]);
   const visEdges = useMemo(() => use.edges.filter((e) => shownIds.has(e.agentId) && visKeys.has(e.nodeKey)), [use, shownIds, visKeys]);
+  // Each section is drawn around the nodes it holds, so moving a node, or the whole section, keeps the box where its contents are.
+  const bandRects = useMemo(() => res.bands.map((b) => {
+    const mine = visNodes.filter((n) => n.kind === b.id).map((n) => rpos[n.key]).filter(Boolean);
+    if (!mine.length) return null;
+    const xs = mine.map((p) => p.x), ys = mine.map((p) => p.y);
+    return { ...b, x: Math.min(...xs) - 56 - NODE / 2, y: Math.min(...ys) - 80 - NODE / 2, w: Math.max(...xs) - Math.min(...xs) + 112 + NODE, h: Math.max(...ys) - Math.min(...ys) + 80 + NODE + 58 };
+  }).filter((b): b is NonNullable<typeof b> => !!b), [res, visNodes, rpos]);
   const bandCount = useMemo(() => Object.fromEntries(res.bands.map((b) => [b.id, visNodes.filter((n) => n.kind === b.id).length])) as Record<string, number>, [res, visNodes]);
 
   // Live: recent traces replayed as activity, with the autoscaler running on the load they create.
@@ -118,10 +129,10 @@ export function Constellation({ initialSelect, trace }: { initialSelect?: string
     const pts = (ids ?? shown.map((a) => a.id)).map((id) => pos[id]).filter(Boolean);
     const rects = pts.map((p) => ({ x0: p.x - R - 70, y0: p.y - R - 70, x1: p.x + R + 70, y1: p.y + R + (ids ? 80 : 110) }));
     if (!ids && layers.exposure && exposures.some((e) => shownIds.has(e.agentId))) rects.push({ x0: cloud.x - 120, y0: cloud.y - 90, x1: cloud.x + 120, y1: cloud.y + 70 });
-    if (!ids) for (const b of res.bands) if (bandCount[b.id]) rects.push({ x0: b.x - 40, y0: b.y - 40, x1: b.x + b.w + 40, y1: b.y + b.h + 40 });
+    if (!ids) for (const b of bandRects) rects.push({ x0: b.x - 40, y0: b.y - 40, x1: b.x + b.w + 40, y1: b.y + b.h + 40 });
     if (!rects.length) return null;
     return { x0: Math.min(...rects.map((r) => r.x0)), y0: Math.min(...rects.map((r) => r.y0)), x1: Math.max(...rects.map((r) => r.x1)), y1: Math.max(...rects.map((r) => r.y1)) };
-  }, [shown, pos, cloud, exposures, shownIds, layers.exposure, res, bandCount]);
+  }, [shown, pos, cloud, exposures, shownIds, layers.exposure, bandRects]);
   const fit = useCallback((ids?: string[], maxK = 1.05) => {
     const b = bounds(ids); if (!b) return;
     const pad = 36; const left = size.w > 900 ? LEGEND_W : pad; const right = pad; const avail = size.w - left - right;
@@ -156,15 +167,16 @@ export function Constellation({ initialSelect, trace }: { initialSelect?: string
   useEffect(() => { if (initialSelect && size.w > 100 && pos[initialSelect]) { const t = setTimeout(() => focus(initialSelect), 60); return () => clearTimeout(t); } }, [initialSelect, size.w > 100]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- pointer: pan the canvas, drag an agent, a group or the cloud, or click to select
-  const drag = useRef<{ kind: "pan" | "agent" | "group" | "cloud" | "link" | "exposure" | "resource"; id: string; sx: number; sy: number; v: View; origin: Record<string, Pt>; moved: boolean } | null>(null);
+  const drag = useRef<{ kind: "pan" | "agent" | "group" | "cloud" | "link" | "exposure" | "resource" | "band"; id: string; sx: number; sy: number; v: View; origin: Record<string, Pt>; moved: boolean } | null>(null);
   const targetOf = (t: EventTarget | null) => { const el = (t as Element | null)?.closest?.("[data-kind]") as HTMLElement | null; return el ? { kind: el.dataset.kind as NonNullable<Hover>["kind"], id: el.dataset.id ?? "" } : null; };
   const onDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return;
     const t = targetOf(e.target);
-    const kind = (t?.kind === "agent" || t?.kind === "group" || t?.kind === "cloud" || t?.kind === "link" || t?.kind === "exposure" || t?.kind === "resource" ? t.kind : "pan");
+    const kind = (t?.kind === "agent" || t?.kind === "group" || t?.kind === "cloud" || t?.kind === "link" || t?.kind === "exposure" || t?.kind === "resource" || t?.kind === "band" ? t.kind : "pan");
     const origin: Record<string, Pt> = {};
     if (kind === "agent" && t) origin[t.id] = pos[t.id];
     if (kind === "resource" && t) origin[t.id] = rpos[t.id];
+    if (kind === "band" && t) visNodes.filter((n) => n.kind === t.id).forEach((n) => { origin[n.key] = rpos[n.key]; });
     if (kind === "group" && t) { const b = boxes.find((x) => x.name === t.id); b?.members.forEach((m) => { origin[m] = pos[m]; }); }
     if (kind === "cloud") origin[CLOUD] = cloud;
     drag.current = { kind, id: t?.id ?? "", sx: e.clientX, sy: e.clientY, v: view, origin, moved: false };
@@ -184,7 +196,7 @@ export function Constellation({ initialSelect, trace }: { initialSelect?: string
   const onUp = (e: React.PointerEvent) => {
     const d = drag.current; drag.current = null; wrap.current?.releasePointerCapture(e.pointerId);
     if (!d || d.moved) return;
-    if (d.kind === "pan") setSel(null);
+    if (d.kind === "pan" || d.kind === "band") setSel(null);
     else if (d.kind === "agent") { setSel({ kind: "agent", id: d.id }); reveal(d.id); }
     else if (d.kind === "link") setSel({ kind: "link", id: d.id });
     else if (d.kind === "resource") { setSel({ kind: "resource", id: d.id }); reveal(d.id); }
@@ -244,7 +256,7 @@ export function Constellation({ initialSelect, trace }: { initialSelect?: string
   const moving = Object.keys(moved).length > 0;
 
   return (
-    <div className="relative h-[calc(100vh-190px)] min-h-[560px] rounded-lg border border-border bg-surface-subtle overflow-hidden select-none">
+    <div className={`relative h-[calc(100vh-190px)] min-h-[560px] rounded-lg border border-border bg-surface-subtle overflow-hidden select-none ${dark ? "tok-dark" : ""}`}>
       <div ref={wrap} className="absolute inset-0 touch-none cursor-grab active:cursor-grabbing" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={() => { if (!drag.current) setHover(null); }}
         style={{ backgroundImage: "radial-gradient(var(--canvas-dot) 1px, transparent 1px)", backgroundSize: `${24 * view.k}px ${24 * view.k}px`, backgroundPosition: `${view.x}px ${view.y}px` }}>
         <svg width={size.w} height={size.h} role="group" aria-label="Agent topology. Drag to move, scroll to zoom." className="block">
@@ -293,7 +305,7 @@ export function Constellation({ initialSelect, trace }: { initialSelect?: string
             )}
 
             {/* connections, channels and knowledge */}
-            {res.bands.filter((b) => bandCount[b.id]).map((b) => <BandBox key={b.id} band={b} count={bandCount[b.id]} u={u} dim={!!hl} />)}
+            {bandRects.map((b) => <BandBox key={b.id} band={b} count={bandCount[b.id]} u={u} dim={!!hl} />)}
             {visEdges.map((e) => {
               const from = pos[e.agentId]; const to = rpos[e.nodeKey]; if (!from || !to) return null;
               const inbound = e.roles.every((r) => r === "trigger"); const both = e.roles.includes("stream");
@@ -353,6 +365,10 @@ export function Constellation({ initialSelect, trace }: { initialSelect?: string
 
       {/* toolbar */}
       <div className="absolute top-3 right-3 flex items-center gap-2" style={{ right: sel ? 444 : 12 }}>
+        {onSwitchView && <button type="button" onClick={onSwitchView} onPointerDown={(e) => e.stopPropagation()} title="Show these agents as a graph, in the manner of Obsidian" aria-label="Graph view"
+          className="h-8 inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2.5 text-[13px] font-medium text-text-secondary hover:bg-surface-muted"><Network size={14} /> Graph</button>}
+        <button type="button" aria-pressed={dark} onClick={toggleDark} onPointerDown={(e) => e.stopPropagation()} title={dark ? "Switch the canvas to the light theme" : "Switch the canvas to the black theme"} aria-label={dark ? "Light theme" : "Black theme"}
+          className="h-8 w-8 grid place-items-center rounded-md border border-border-strong bg-surface text-text-secondary hover:bg-surface-muted">{dark ? <Sun size={15} /> : <Moon size={15} />}</button>
         <button type="button" aria-pressed={liveOn} onClick={() => setLiveOn((v) => !v)} onPointerDown={(e) => e.stopPropagation()} title="Replay recent runs on the canvas, with agents changing state and replicas following the autoscaler."
           className={`h-8 inline-flex items-center gap-2 rounded-md border px-3 text-[13px] font-medium ${liveOn ? "border-[#2563EB] bg-[#2563EB]/10 text-[#1D4ED8]" : "border-border-strong bg-surface text-text-secondary"}`}>
           <span className="relative flex h-2 w-2"><span className={`absolute inline-flex h-full w-full rounded-full ${liveOn && !reduced ? "animate-ping" : ""}`} style={{ background: liveOn ? LIVE_COLOR : "rgb(var(--c-text-tertiary))", opacity: 0.6 }} /><span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: liveOn ? LIVE_COLOR : "rgb(var(--c-text-tertiary))" }} /></span>
@@ -529,6 +545,7 @@ function HoverCard({ hover, nodeBy, byId, links, exposures, applied, live, healt
       {n.problem && <p className={`text-xs ${n.status === "problem" ? "text-status-down" : "text-[#8A5504]"}`}>{n.problem}</p>}
       <div className="text-[11px] text-text-tertiary pt-1 border-t border-border">Click for details. Drag to move.</div></div>;
   }
+  if (hover.kind === "band") { const n = nodeBy; const items = [...n.values()].filter((x) => x.kind === hover.id); return <div className="space-y-1 text-xs"><div className="font-semibold text-[13px]">{{ knowledge: "Knowledge", channel: "Notification channels", connection: "Connections" }[hover.id] ?? hover.id}</div>{row("Items", items.length)}<div className="text-[11px] text-text-tertiary pt-1 border-t border-border">Drag the section to move everything in it. Drag one item to move only that item.</div></div>; }
   if (hover.kind === "cloud") return <div className="text-xs"><div className="font-semibold text-[13px] mb-1">Outside callers</div>Agents with a cloud mark can be called from outside the organisation. Dotted lines show which.</div>;
   const g = boxes.find((b) => b.name === hover.id); if (!g) return null;
   const list = g.members.map((m) => byId.get(m)!).filter(Boolean);

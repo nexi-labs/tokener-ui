@@ -2,7 +2,7 @@
 
 import { OwnerSelect } from "@/components/org/OrgSelect";
 import clsx from "clsx";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -17,6 +17,8 @@ import {
 } from "@/lib/agents/execution";
 import { toast } from "@/lib/mlops/toast";
 import { ToolCallingCard } from "@/components/agents/ToolCallingCard";
+import { SwitchRuntimeButton, UndoSwitch } from "@/components/agents/SwitchRuntime";
+import { AutoSwitchCard } from "@/components/agents/AutoSwitchCard";
 
 const GATE: { id: GateWhen; label: string }[] = [{ id: "always", label: "Every run" }, { id: "low-confidence", label: "Low confidence" }, { id: "sensitive-tool", label: "Before a sensitive tool" }, { id: "cost", label: "Cost above a limit" }, { id: "policy", label: "A policy asks" }];
 const TRIGGERS: TriggerKind[] = ["webhook", "topic", "queue", "dataset", "cdc", "file", "email"];
@@ -28,6 +30,13 @@ export function RuntimePanel({ a }: { a: Agent }) {
   const hub = useHub();
   const saved = a.execution ?? defaultExecution("serverless");
   const [draft, setDraft] = useState<Execution>(saved);
+  // A switch of runtime changes the saved settings from outside this form, so the form follows it.
+  // A switch (by a person or by a rule) changes the saved settings while the form is open. Unsaved edits to the rules are kept; everything else follows the saved settings.
+  const prev = useRef(saved);
+  useEffect(() => {
+    const was = prev.current; prev.current = saved;
+    setDraft((d) => (JSON.stringify(d) === JSON.stringify(was) ? saved : { ...saved, autoSwitch: d.autoSwitch }));
+  }, [a.execution]); // eslint-disable-line react-hooks/exhaustive-deps
   const [peak, setPeak] = useState(40);
   const governed = a.control === "governed" && a.state !== "retired";
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
@@ -38,7 +47,7 @@ export function RuntimePanel({ a }: { a: Agent }) {
   const setMode = <K extends ModeId>(k: K, v: Execution["modes"][K] | undefined) => set((e) => { const modes = { ...e.modes }; if (v === undefined) delete modes[k]; else modes[k] = v; return { ...e, modes }; });
   const pickRuntime = (k: RuntimeKind) => set((e) => {
     const d = defaultExecution(k); const keep = Object.fromEntries(Object.entries(e.modes).filter(([m]) => RUNTIME_BY_ID[k].modes.includes(m as ModeId)));
-    return { ...d, modes: Object.keys(keep).length ? keep : d.modes };
+    return { ...d, autoSwitch: e.autoSwitch, modes: Object.keys(keep).length ? keep : d.modes };
   });
   const save = () => { const r = actions.setExecution(a.id, draft); if (!r.ok) toast(r.error, "error"); else toast("Runtime settings saved", "success"); };
 
@@ -70,7 +79,9 @@ export function RuntimePanel({ a }: { a: Agent }) {
     <div className="space-y-5">
       {!governed && <Notice tone="warn" title={a.state === "retired" ? "Retired" : "Not run by tok∑ner"}>{a.state === "retired" ? "A retired agent cannot be changed." : "tok∑ner does not run this agent, so these settings are a record of how it starts on its own platform. Change them there."}</Notice>}
 
-      <Card><CardHeader title="Where it runs" subtitle="The shape of the hosting. It decides what can start the agent, how it scales and how it is billed." />
+      <UndoSwitch a={a} />
+
+      <Card><CardHeader title="Where it runs" subtitle="The shape of the hosting. It decides what can start the agent, how it scales and how it is billed." action={<SwitchRuntimeButton a={a} />} />
         <CardBody><div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3" role="radiogroup" aria-label="Runtime">
           {RUNTIMES.map((r) => (
             <button key={r.id} type="button" role="radio" aria-checked={draft.runtime === r.id} disabled={lock} onClick={() => pickRuntime(r.id)}
@@ -80,6 +91,8 @@ export function RuntimePanel({ a }: { a: Agent }) {
           <p className="text-xs text-text-tertiary mt-3 max-w-3xl">{rt.blurb} Cold start: {rt.coldStart.toLowerCase()}.</p>
           {draft.runtime !== "external" && <div className="mt-2"><Toggle checked={draft.durable} onChange={(v) => !lock && set((e) => ({ ...e, durable: v }))} label="Save progress between steps" description="A saved run can wait hours for a person and carry on, and can be resumed after a restart." /></div>}
         </CardBody></Card>
+
+      <AutoSwitchCard a={a} value={draft.autoSwitch} onChange={(v) => !lock && set((e) => ({ ...e, autoSwitch: v }))} lock={lock || draft.runtime === "external"} saved={saved.autoSwitch} dirty={JSON.stringify(draft.autoSwitch) !== JSON.stringify(saved.autoSwitch)} />
 
       <ToolCallingCard a={a} value={draft.toolCalling} onChange={(v) => !lock && set((e) => ({ ...e, toolCalling: v }))} lock={lock} connections={connections} />
 

@@ -1,5 +1,8 @@
 "use client";
 
+import { useCrucibleStatus } from "@/lib/crucible/live/store";
+import { LiveDatasets } from "@/components/crucible/live/Datasets";
+
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
@@ -15,7 +18,7 @@ import { ago, int } from "@/lib/agents/format";
 
 type Tab = "exposed" | "available";
 
-export default function Datasets() {
+function SampleDatasets() {
   const { catalog, runs, policies } = useCrucible(); const role = useRole();
   const [tab, setTab] = useState<Tab>("exposed"); const [openId, setOpenId] = useState<string | null>(null);
   const list = useMemo(() => catalog.filter((d) => (tab === "exposed" ? d.exposed : !d.exposed)), [catalog, tab]);
@@ -101,4 +104,9 @@ function Detail({ d, runs }: { d: CatalogDataset; runs: number }) {
         <p className="text-xs text-text-tertiary mt-2">{runs} runs pin this dataset today. The SDK is planned and not published, see docs/52.</p></section>)}
     </div>
   );
+}
+
+/** A signed-in workspace shows what the training service returns. The sample workspace keeps its own screen. */
+export default function Datasets() {
+  return useCrucibleStatus().connected ? <LiveDatasets /> : <SampleDatasets />;
 }

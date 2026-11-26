@@ -53,6 +53,28 @@
     ui-serif, serif;
 }
 
+/* A black theme for one part of the console, the Agent OS canvases. The tokens above are redefined, so everything inside follows. */
+.tok-dark {
+  color-scheme: dark;
+  --c-surface: 18 20 25;
+  --c-surface-subtle: 6 7 9;
+  --c-surface-muted: 30 33 40;
+  --c-border: 40 44 52;
+  --c-border-strong: 66 72 84;
+  --c-text-primary: 238 241 243;
+  --c-text-secondary: 168 177 183;
+  --c-text-tertiary: 118 128 135;
+  --c-emph: 238 241 243;
+  --c-emph-hover: 255 255 255;
+  --c-on-emph: 8 9 11;
+  --c-note: 150 190 202;
+  --c-accent-50: 8 40 30;
+  --c-accent-100: 10 58 44;
+  --canvas-dot: rgba(255, 255, 255, 0.1);
+  background-color: rgb(var(--c-surface-subtle));
+  color: rgb(var(--c-text-primary));
+}
+
 html,
 body {
   height: 100%;

@@ -96,7 +96,7 @@ export default function AgentDetail() {
           <tbody>{mine.map((r) => <Tr key={r.id}><Td><Link href={`/agents/traces?trace=${r.id}`} className="font-mono text-xs hover:underline">{r.id}</Link></Td><Td className="text-xs text-text-secondary whitespace-nowrap">{ago(r.startedAt)}</Td><Td className="text-[13px]">{r.trigger}</Td><Td className="text-[13px]">{r.behalfOf}</Td><Td className="text-right tabular-nums">{r.spans.length - 1}</Td><Td className="text-right tabular-nums">{dur(r.durationMs)}</Td><Td className="text-right tabular-nums">{usd(r.costUsd, 3)}</Td><Td><Badge tone={r.status === "ok" ? "healthy" : "down"}>{r.status === "ok" ? "Succeeded" : "Failed"}</Badge></Td></Tr>)}</tbody></Table>)}</Card>}
 
       {tab === "memory" && <MemoryPanel key={a.id + a.version + (a.versions[0]?.at ?? "")} a={a} />}
-      {tab === "runtime" && <RuntimePanel key={a.id + a.version + (a.versions[0]?.at ?? "")} a={a} />}
+      {tab === "runtime" && <RuntimePanel key={a.id} a={a} />}
       {tab === "connections" && <ConnectionsPanel key={a.id + (a.versions[0]?.at ?? "")} a={a} />}
 
       {tab === "governance" && <div className="space-y-5">

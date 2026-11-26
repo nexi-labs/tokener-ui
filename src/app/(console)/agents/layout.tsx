@@ -8,6 +8,8 @@ import { AGENT_PAGES } from "@/lib/nav";
 import { SampleGate } from "@/components/gateway/SampleGate";
 import { Toaster } from "@/components/mlops/ui";
 import { resetAgents } from "@/lib/agents/store";
+import { loadSim } from "@/lib/agents/loadsim";
+import { AutoSwitchDriver } from "@/components/agents/AutoSwitchDriver";
 import { toast } from "@/lib/mlops/toast";
 
 const TITLE = "Agent OS";
@@ -20,6 +22,7 @@ export default function AgentsLayout({ children }: { children: React.ReactNode }
   return (
     <SampleGate title={TITLE} description={DESCRIPTION}>
       <div className="space-y-6">
+        <AutoSwitchDriver />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <nav aria-label="Agent OS sections" className="flex flex-wrap gap-x-0.5 gap-y-1">
             {AGENT_PAGES.map((p) => {
@@ -32,7 +35,7 @@ export default function AgentsLayout({ children }: { children: React.ReactNode }
               );
             })}
           </nav>
-          <button onClick={() => { resetAgents(); toast("Sample data reset to the seeded state", "info"); }} className="h-8 px-2 inline-flex items-center gap-1.5 rounded-md hover:bg-surface-muted text-text-secondary text-xs">
+          <button onClick={() => { resetAgents(); loadSim.reset(); toast("Sample data reset to the seeded state", "info"); }} className="h-8 px-2 inline-flex items-center gap-1.5 rounded-md hover:bg-surface-muted text-text-secondary text-xs">
             <RotateCcw size={13} /> Reset sample data
           </button>
         </div>

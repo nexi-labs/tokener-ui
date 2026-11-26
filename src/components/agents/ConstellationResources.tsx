@@ -21,13 +21,14 @@ export function resourcePath(from: Pt, to: Pt, inbound: boolean): { d: string; m
   return { d, mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } };
 }
 
+/** A section of resources (knowledge, channels or connections). It is a drag handle: moving it moves every item inside. */
 export function BandBox({ band, count, u, dim }: { band: Band; count: number; u: number; dim: boolean }) {
   return (
-    <g pointerEvents="none" opacity={dim ? 0.3 : 1}>
-      <rect x={band.x} y={band.y} width={band.w} height={band.h} rx={26} fill={surface} fillOpacity={0.6} stroke={border} strokeWidth={1.2} strokeDasharray="2 7" strokeLinecap="round" />
-      <text x={band.x + 26} y={band.y + 24 + 14 * u} fontSize={17 * u} fontWeight={600} fill={ink}>{band.title}</text>
-      <text x={band.x + band.w - 26} y={band.y + 24 + 14 * u} textAnchor="end" fontSize={12 * u} fill={faint}>{count}</text>
-      <text x={band.x + 26} y={band.y + 24 + 14 * u + 16 * u} fontSize={11.5 * u} fill={faint}>{band.hint}</text>
+    <g data-kind="band" data-id={band.id} className="cursor-move" opacity={dim ? 0.3 : 1}>
+      <rect x={band.x} y={band.y} width={band.w} height={band.h} rx={26} fill={surface} fillOpacity={0.6} stroke={border} strokeWidth={1.2} strokeDasharray="2 7" strokeLinecap="round" pointerEvents="all" />
+      <text x={band.x + 26} y={band.y + 24 + 14 * u} fontSize={17 * u} fontWeight={600} fill={ink} pointerEvents="none">{band.title}</text>
+      <text x={band.x + band.w - 26} y={band.y + 24 + 14 * u} textAnchor="end" fontSize={12 * u} fill={faint} pointerEvents="none">{count}</text>
+      <text x={band.x + 26} y={band.y + 24 + 14 * u + 16 * u} fontSize={11.5 * u} fill={faint} pointerEvents="none">{band.hint}</text>
     </g>
   );
 }

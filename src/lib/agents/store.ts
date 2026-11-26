@@ -10,7 +10,10 @@ import { decide as decideApproval, sampleApprovals, type Approval, type Outcome 
 import { sampleEvals, runSuite, type EvalRun, type EvalSuite, type EvalCase } from "./evals";
 import { applyRetention, memoryGrants, sampleMemoryItems, validateMemory, MEMORY_SERVER, KIND_BY_ID, type MemoryConfig, type MemoryItem, type MemoryKind } from "./memory";
 import { DEFAULT_ACCESS, canExpose, gatewayUrl, makeKey, makeSigningSecret, signingRef, validateAccess, type Access, type ApiKey, type KeyScope } from "./access";
-import { defaultExecution, validateExecution, type Execution, type ExecIssue } from "./execution";
+import { RUNTIME_BY_ID, defaultExecution, validateExecution, type Execution, type ExecIssue, type RuntimeKind } from "./execution";
+import { getSimNow } from "./loadsim";
+import type { SwitchEvent } from "./autoswitch";
+import { planSwitch, rollbackNote, switchNote, type Plan, type Strategy } from "./switching";
 import type { Exposure, Link, Live, Policy } from "./topology";
 import type { Agent, AgentState, ControlLevel, Trace, Workflow, WorkflowPattern } from "./types";
 import type { ForgeSpec } from "./codegen";
@@ -108,8 +111,31 @@ export const agents = {
     if (a.control !== "governed") return { ok: false, error: "tok∑ner does not run this agent, so it cannot change how it starts. Change it on the platform where it runs." };
     const issues = validateExecution(e, { hasSensitiveTools: a.tools.some((t) => t.sensitive), control: a.control, toolCount: a.tools.length });
     const first = issues.find((i) => i.level === "error"); if (first) return { ok: false, error: first.message };
-    patchAgent(id, (x) => ({ ...x, execution: e, versions: [{ version: x.version, at: new Date().toISOString(), note: e.toolCalling?.mode !== a.execution?.toolCalling?.mode ? `Tool calling set to ${e.toolCalling?.mode === "code" ? "Code Mode" : "direct calls"}` : "Runtime settings changed" }, ...x.versions] }));
+    patchAgent(id, (x) => ({ ...x, execution: e, lastSwitch: undefined, versions: [{ version: x.version, at: new Date().toISOString(), note: e.toolCalling?.mode !== a.execution?.toolCalling?.mode ? `Tool calling set to ${e.toolCalling?.mode === "code" ? "Code Mode" : "direct calls"}` : "Runtime settings changed" }, ...x.versions] }));
     return { ok: true, value: issues };
+  },
+  /** Moves a governed agent to another runtime using a plan from `planSwitch`. The old settings are kept for `undoSwitch`. `meta` says a rule did it, and why. */
+  switchRuntime(id: string, to: RuntimeKind, strategy: Strategy, inFlight: number, meta?: { rule: string; reason: string }): Result<Plan> {
+    const a = get().agents.find((x) => x.id === id);
+    if (!a) return { ok: false, error: "That agent does not exist." };
+    const plan = planSwitch(a, to, strategy, inFlight);
+    if (plan.blockers.length) return { ok: false, error: plan.blockers[0] };
+    const before = a.execution ?? defaultExecution("serverless"); const now = new Date().toISOString(); const sim = getSimNow();
+    const ev: SwitchEvent = { at: now, simAt: sim, from: plan.from, to, rule: meta?.rule ?? "Switched by a person", reason: meta?.reason ?? "A person chose it on the Runtime tab.", strategy, inFlight: plan.inFlight, cancelled: plan.cancelled, auto: !!meta };
+    const note = (meta ? `Automatic switch from ${RUNTIME_BY_ID[plan.from].label.toLowerCase()} to ${RUNTIME_BY_ID[to].label.toLowerCase()} (${meta.rule})` : switchNote(plan.from, plan.to, strategy)) + (plan.cancelled ? `, ${plan.cancelled} run${plan.cancelled === 1 ? "" : "s"} cancelled` : "");
+    patchAgent(id, (x) => ({ ...x, execution: plan.next, lastSwitch: { from: before, to, strategy, at: now }, switching: { lastSwitchSim: sim, log: [ev, ...(x.switching?.log ?? [])].slice(0, 20) }, versions: [{ version: x.version, at: now, note }, ...x.versions] }));
+    return { ok: true, value: plan };
+  },
+  /** Puts back the settings from before the last switch. */
+  undoSwitch(id: string): Result {
+    const a = get().agents.find((x) => x.id === id);
+    if (!a) return { ok: false, error: "That agent does not exist." };
+    if (!a.lastSwitch) return { ok: false, error: "There is no runtime switch to undo." };
+    const now = a.execution?.runtime ?? "serverless"; const back = a.lastSwitch.from; const at = new Date().toISOString(); const sim = getSimNow();
+    const ev: SwitchEvent = { at, simAt: sim, from: now, to: back.runtime, rule: "Undone by a person", reason: "A person undid the last switch.", strategy: "drain", inFlight: 0, cancelled: 0, auto: false };
+    // Undoing restores the settings as they were, including the automatic switching policy as it was then.
+    patchAgent(id, (x) => ({ ...x, execution: back, lastSwitch: undefined, switching: { lastSwitchSim: sim, log: [ev, ...(x.switching?.log ?? [])].slice(0, 20) }, versions: [{ version: x.version, at, note: rollbackNote(now, back.runtime) }, ...x.versions] }));
+    return { ok: true, value: undefined };
   },
   /** Saves what the agent is connected to. Notification tools it now uses are granted, so a binding never points at a tool the agent cannot call. */
   setBindings(id: string, declared: Binding[], hub: Hub): Result<BindingIssue[]> {

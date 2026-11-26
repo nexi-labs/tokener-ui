@@ -12,7 +12,8 @@ export const CRUCIBLE: DocSection = {
       console: "/crucible",
       role: "viewer",
       blocks: [
-        { t: "callout", tone: "sample", title: "Crucible runs on sample data", text: "Every Crucible screen reads a built-in sample set. The training service it will read from is not built yet, so in a connected organization these screens say **Not connected to your workspace yet**. The SDK, the command line and the MLflow compatible address are planned and not published, so nothing here has run against a real machine. The sample has a **Viewing as** role menu and a **Reset sample data** button at the top." },
+        { t: "callout", tone: "sample", title: "What is live and what is sample", text: "In a signed-in organization the **Overview**, **Projects**, **Experiments**, **Datasets**, **Storage** and **Lineage** screens, run pages and an admin only **Activity** screen read and write the training service. A machine logs runs with a project key over plain HTTP. **Jobs** and **Continuous training** are not built, so they say **Not connected to your workspace yet**. The **Memory planner** and **Adapters** work in both. The SDK, the command line and the MLflow compatible address are planned and not published, and the service has not been run against a real S3 or Vault. The sample workspace keeps its **Viewing as** role menu and a **Reset sample data** button, and every figure there is sample data." },
+
         { t: "p", text: "Crucible is where models are trained and kept honest. It records every run with what produced it, queues jobs on your GPUs, retrains models when new data arrives and checks GPU memory before a job takes a card." },
         { t: "layers", layers: [
           { label: "Bring work in", items: ["Projects and machines", "Datasets from the Refinery", "Storage for artifacts"], tone: "accent" },

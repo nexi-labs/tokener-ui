@@ -1,5 +1,8 @@
 "use client";
 
+import { useCrucibleStatus } from "@/lib/crucible/live/store";
+import { LiveProjects } from "@/components/crucible/live/Projects";
+
 import Link from "next/link";
 import { useState } from "react";
 import { Plus } from "lucide-react";
@@ -16,7 +19,7 @@ import { toast } from "@/lib/mlops/toast";
 import { ago } from "@/lib/agents/format";
 import { useRouter } from "next/navigation";
 
-export default function Projects() {
+function SampleProjects() {
   const { projects, machines, keys, stores, runs } = useCrucible(); const role = useRole(); const [open, setOpen] = useState(false);
   return (
     <div className="space-y-6">
@@ -72,4 +75,9 @@ function NewProject({ onClose }: { onClose: () => void }) {
       </div>
     </Modal>
   );
+}
+
+/** A signed-in workspace shows what the training service returns. The sample workspace keeps its own screen. */
+export default function Projects() {
+  return useCrucibleStatus().connected ? <LiveProjects /> : <SampleProjects />;
 }

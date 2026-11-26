@@ -1,5 +1,8 @@
 "use client";
 
+import { useCrucibleStatus } from "@/lib/crucible/live/store";
+import { LiveLineage } from "@/components/crucible/live/Lineage";
+
 import Link from "next/link";
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -51,4 +54,9 @@ function Inner() {
     </div>
   );
 }
-export default function LineagePage() { return <Suspense fallback={null}><Inner /></Suspense>; }
+function SampleLineagePage() { return <Suspense fallback={null}><Inner /></Suspense>; }
+
+/** A signed-in workspace shows what the training service returns. The sample workspace keeps its own screen. */
+export default function LineagePage() {
+  return useCrucibleStatus().connected ? <LiveLineage /> : <SampleLineagePage />;
+}

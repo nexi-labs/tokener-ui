@@ -1,5 +1,8 @@
 "use client";
 
+import { useCrucibleStatus } from "@/lib/crucible/live/store";
+import { LiveOverview } from "@/components/crucible/live/Overview";
+
 import Link from "next/link";
 import { useMemo } from "react";
 import { ArrowRight } from "lucide-react";
@@ -13,7 +16,7 @@ import { useCrucible } from "@/lib/crucible/store";
 import { smallestFix, defaultPlan, PRESETS } from "@/lib/crucible/memory";
 import { ago, int, usd } from "@/lib/agents/format";
 
-export default function TrainOverview() {
+function SampleTrainOverview() {
   const { runs, jobs, policies, cycles, experiments } = useCrucible();
   const k = useMemo(() => {
     const month = Date.now() - 30 * 24 * 3600_000;
@@ -125,4 +128,9 @@ export default function TrainOverview() {
       </Section>
     </div>
   );
+}
+
+/** A signed-in workspace shows what the training service returns. The sample workspace keeps its own screen. */
+export default function TrainOverview() {
+  return useCrucibleStatus().connected ? <LiveOverview /> : <SampleTrainOverview />;
 }

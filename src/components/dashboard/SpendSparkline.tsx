@@ -3,10 +3,9 @@
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 
 const DATA = [
-  { day: "1", spend: 1120 }, { day: "3", spend: 1340 }, { day: "5", spend: 1290 },
-  { day: "7", spend: 1610 }, { day: "9", spend: 1480 }, { day: "11", spend: 1820 },
-  { day: "13", spend: 2010 }, { day: "15", spend: 1940 }, { day: "17", spend: 2260 },
-  { day: "19", spend: 2380 }, { day: "21", spend: 2190 }, { day: "23", spend: 2540 },
+  { day: "1", spend: 410 }, { day: "3", spend: 455 }, { day: "5", spend: 440 }, { day: "7", spend: 520 },
+  { day: "9", spend: 490 }, { day: "11", spend: 560 }, { day: "13", spend: 575 }, { day: "15", spend: 540 },
+  { day: "17", spend: 610 }, { day: "19", spend: 585 }, { day: "21", spend: 530 }, { day: "23", spend: 600 },
 ];
 
 export function SpendSparkline() {

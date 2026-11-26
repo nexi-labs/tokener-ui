@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { NetworkSetup } from "@/components/agents/NetworkSetup";
+import type { NetworkConfig } from "@/lib/agents/network";
 import { Modal, Notice } from "@/components/mlops/ui";
 import { Button } from "@/components/ui/Button";
 import { OrgPlacement, OwnerSelect, noPlace, type OrgPlace } from "@/components/org/OrgSelect";
@@ -18,11 +20,12 @@ export function RegisterAgent({ open, onClose, onDone }: { open: boolean; onClos
   const [f, setF] = useState({ name: "", title: "", description: "", owner: "", framework: "http-agent", endpoint: "", control: "inventory" as ControlLevel, risk: "medium" as Risk });
   const [place, setPlace] = useState<OrgPlace>(noPlace);
   const [err, setErr] = useState("");
+  const [network, setNetwork] = useState<NetworkConfig | undefined>(undefined);
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((x) => ({ ...x, [k]: v }));
   const submit = () => {
-    const r = agents.register({ ...f, department: place.department, project: place.project });
+    const r = agents.register({ ...f, department: place.department, project: place.project, network });
     if (!r.ok) { setErr(r.error); return; }
-    toast(`${r.value.title} is registered`, "success"); setErr(""); onClose(); onDone?.(r.value.id);
+    toast(`${r.value.title} is registered`, "success"); setNetwork(undefined); setErr(""); onClose(); onDone?.(r.value.id);
   };
   const groups = [["Frameworks and platforms", ADAPTERS.filter((a) => a.kind !== "protocol" && a.connect)], ["Open protocols", ADAPTERS.filter((a) => a.kind === "protocol")]] as const;
   return (
@@ -59,6 +62,11 @@ export function RegisterAgent({ open, onClose, onDone }: { open: boolean; onClos
           </div>
           {f.control === "governed" && <p className="text-xs text-text-tertiary mt-2">Only choose Governed once the agent calls models and tools through the tok∑ner gateways. Otherwise the registry would claim control it does not have.</p>}
         </fieldset>
+        <div className="border-t border-border pt-4">
+          <div className="text-[13px] font-medium mb-1">Network and security</div>
+          <p className="text-xs text-text-tertiary mb-3">Put the tok∑ner edge in front of this agent: identity, limits and the shield for calls coming in. Because the agent runs elsewhere, its address is locked to the edge.</p>
+          <NetworkSetup subject={{ name: f.name, control: f.control, models: [], tools: [] }} value={network} onChange={setNetwork} />
+        </div>
       </div>
     </Modal>
   );

@@ -15,9 +15,12 @@ function Inner() {
   useEffect(() => { if (asked === "graph" || asked === "map") return; try { if (localStorage.getItem(KEY) === "graph") setView("graph"); } catch { /* storage unavailable */ } }, [asked]);
   const pick = (v: View) => { setView(v); try { localStorage.setItem(KEY, v); } catch { /* storage unavailable */ } };
   const agent = q.get("agent") ?? undefined;
+  // Full page lets the canvas fill the browser. Escape closes it, and it never survives leaving the page.
+  const [full, setFull] = useState(false); const toggleFull = () => setFull((v) => !v);
+  useEffect(() => { if (!full) return; const k = (e: KeyboardEvent) => { if (e.key === "Escape") setFull(false); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [full]);
   return view === "graph"
-    ? <AgentGraph initialSelect={agent} onSwitchView={() => pick("map")} />
-    : <Constellation initialSelect={agent} trace={q.get("trace") ?? undefined} onSwitchView={() => pick("graph")} />;
+    ? <AgentGraph initialSelect={agent} onSwitchView={() => pick("map")} fullPage={full} onToggleFull={toggleFull} />
+    : <Constellation initialSelect={agent} trace={q.get("trace") ?? undefined} onSwitchView={() => pick("graph")} full={full} onToggleFull={toggleFull} />;
 }
 
 export default function ConstellationPage() {

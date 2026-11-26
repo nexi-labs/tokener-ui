@@ -1,9 +1,11 @@
 "use client";
 
 import NextLink from "next/link";
+import { assess, memberCounts } from "@/lib/agents/network";
+import { PostureBadge, postureColor } from "./NetworkBits";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowRight, Bell, BookOpen, Bot, Banknote, ChevronDown, ChevronRight, ClipboardCheck, Code2, Cog, Database, Headset, LifeBuoy, Maximize, Megaphone, Moon, Orbit, Plug, RotateCcw, Scale, Search,
+  ArrowRight, Bell, BookOpen, Bot, Banknote, ChevronDown, ChevronRight, ClipboardCheck, Code2, Cog, Database, Headset, LifeBuoy, Maximize, Maximize2, Megaphone, Minimize2, Moon, Orbit, Plug, RotateCcw, ShieldCheck, Scale, Search,
   Sun, Telescope, TrendingUp, Users, X, ZoomIn, ZoomOut, type LucideIcon,
 } from "lucide-react";
 import { totals, useAgents } from "@/lib/agents/store";
@@ -41,8 +43,9 @@ type Section = { id: string; label: string; color: string; ids: string[]; agents
 /** Below this zoom the map becomes an overview: each section shows its totals and the individual labels give way. */
 const OVERVIEW = 0.62;
 
-export function AgentGraph({ initialSelect, onSwitchView }: { initialSelect?: string; onSwitchView?: () => void }) {
+export function AgentGraph({ initialSelect, onSwitchView, fullPage, onToggleFull }: { initialSelect?: string; onSwitchView?: () => void; fullPage?: boolean; onToggleFull?: () => void }) {
   const store = useAgents(); const hub = useHub(); const { agents, links, traces } = store;
+  const posture = useMemo(() => { const counts = memberCounts(Object.fromEntries(agents.map((x) => [x.id, x.network]))); return new Map(agents.map((x) => [x.id, assess(x, x.network, store.networks, counts)])); }, [agents, store.networks]);
   const [by, setBy] = useState<ColorBy>("department");
   const [resources, setResources] = useState(true); const [retired, setRetired] = useState(false);
   const [q, setQ] = useState(""); const [hidden, setHidden] = useState<Set<string>>(new Set());
@@ -130,6 +133,7 @@ export function AgentGraph({ initialSelect, onSwitchView }: { initialSelect?: st
 
   // The controls panel covers the left of the canvas, so the map is fitted to the space beside it.
   const inset = collapsed ? 0 : 296;
+  const firstFull = useRef(true);
   const fit = useCallback(() => {
     const s = sim.current; if (!s.nodes.length) return;
     const xs = s.nodes.map((n) => n.x), ys = s.nodes.map((n) => n.y); const pad = 120; const w = Math.max(240, size.w - inset);
@@ -137,6 +141,8 @@ export function AgentGraph({ initialSelect, onSwitchView }: { initialSelect?: st
     const k = clamp(Math.min(w / (x1 - x0), size.h / (y1 - y0)), 0.25, 1.6);
     setView({ k, x: inset + w / 2 - ((x0 + x1) / 2) * k, y: size.h / 2 - ((y0 + y1) / 2) * k });
   }, [size, inset]);
+  // Entering or leaving full page changes the size of the canvas, so the agents are fitted again once it has resized.
+  useEffect(() => { if (firstFull.current) { firstFull.current = false; return; } const t = setTimeout(() => { userMoved.current = false; fitRef.current(); }, 250); return () => clearTimeout(t); }, [fullPage]); // eslint-disable-line react-hooks/exhaustive-deps
   const fitRef = useRef(fit); fitRef.current = fit;
 
   const run = useCallback(() => {
@@ -274,7 +280,7 @@ export function AgentGraph({ initialSelect, onSwitchView }: { initialSelect?: st
   const px = 1 / view.k; const hoverNode = hover ? nodeBy.get(hover) : undefined;
 
   return (
-    <div className={`${light ? "" : "tok-dark"} relative h-[calc(100vh-190px)] min-h-[560px] rounded-lg border border-border overflow-hidden select-none`} style={{ background: T.bg }}>
+    <div data-full={fullPage ? "true" : undefined} className={`${light ? "" : "tok-dark"} ${fullPage ? "fixed inset-0 z-[70] !m-0 border-0" : "relative h-[calc(100vh-190px)] min-h-[560px] rounded-lg border"} border-border overflow-hidden select-none`} style={{ background: T.bg }}>
       <div ref={box} className="absolute inset-0">
         <svg ref={svgRef} className="h-full w-full touch-none cursor-grab active:cursor-grabbing" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} role="group" aria-label="Graph of agents">
           <defs><filter id="gglow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
@@ -324,6 +330,7 @@ export function AgentGraph({ initialSelect, onSwitchView }: { initialSelect?: st
                       <circle r={r} fill={n.color} filter={T.glow ? "url(#gglow)" : undefined} />
                       <circle r={r} fill="none" stroke={T.rim} strokeWidth={1} />
                       <Icon x={-r * 0.52} y={-r * 0.52} width={r * 1.04} height={r * 1.04} color={T.icon} strokeWidth={2.1} pointerEvents="none" />
+                      {agent && posture.get(agent.id)?.configured && <g transform={`translate(${r * 0.74} ${-r * 0.74})`} pointerEvents="none"><title>{`Network security: ${posture.get(agent.id)!.label}`}</title><circle r={Math.max(6, r * 0.3)} fill={T.bg} stroke={postureColor(posture.get(agent.id)!)} strokeWidth={1.8} /><ShieldCheck x={-Math.max(6, r * 0.3) * 0.62} y={-Math.max(6, r * 0.3) * 0.62} width={Math.max(6, r * 0.3) * 1.24} height={Math.max(6, r * 0.3) * 1.24} color={postureColor(posture.get(agent.id)!)} strokeWidth={2.4} /></g>}
                       {h && HEALTH_DOT[h] && <circle cx={r * 0.72} cy={r * 0.72} r={Math.max(4, r * 0.24)} fill={HEALTH_DOT[h]} stroke={T.bg} strokeWidth={1.5} />}
                     </>
                   ) : (
@@ -394,7 +401,8 @@ export function AgentGraph({ initialSelect, onSwitchView }: { initialSelect?: st
         )}
       </div>
 
-      <div data-nodrag className="absolute top-3 flex items-center gap-2" style={{ right: selNode ? 356 : 12 }} onPointerDown={(e) => e.stopPropagation()}>
+      <div data-nodrag className="absolute top-3 flex items-center gap-2" style={{ right: (selNode ? 356 : 12) + (fullPage ? 46 : 0) }} onPointerDown={(e) => e.stopPropagation()}>
+        {fullPage && <button type="button" onClick={onToggleFull} aria-label="Close full page" title="Close full page (Esc)" className="fixed top-3 z-[80] h-9 w-9 grid place-items-center rounded-full border border-border-strong bg-surface text-text-primary shadow-popover hover:bg-surface-muted" style={{ right: selNode ? 356 : 12 }}><X size={17} /></button>}
         <button type="button" aria-pressed={liveOn} onClick={() => setLiveOn((v) => !v)} title="Replay recent runs: agents pulse while they work and packets travel along a line while one agent calls another or uses a resource"
           className={`h-8 inline-flex items-center gap-2 rounded-md border px-3 text-[13px] font-medium ${liveOn ? "border-[#12B58A] text-[#0E9F77] bg-[#12B58A]/10" : "border-border-strong bg-surface text-text-secondary"}`}>
           <span className="relative flex h-2 w-2"><span className={`absolute inline-flex h-full w-full rounded-full ${liveOn && !reduced ? "animate-ping" : ""}`} style={{ background: liveOn ? "#12B58A" : "#6B7480", opacity: 0.6 }} /><span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: liveOn ? "#12B58A" : "#6B7480" }} /></span>
@@ -410,6 +418,7 @@ export function AgentGraph({ initialSelect, onSwitchView }: { initialSelect?: st
         <Tool label="Zoom out" onClick={() => zoomBy(1 / 1.3)}><ZoomOut size={15} /></Tool>
         <span className="h-5 w-px bg-border" />
         <Tool label="Fit to screen" onClick={() => { userMoved.current = false; fit(); }}><Maximize size={15} /></Tool>
+        {onToggleFull && <Tool label={fullPage ? "Close full page" : "Full page"} onClick={onToggleFull}>{fullPage ? <Minimize2 size={15} /> : <Maximize2 size={15} />}</Tool>}
         <Tool label="Release moved nodes and let the layout settle again" onClick={settle}><RotateCcw size={15} /></Tool>
       </div>
       {overview && shown.nodes.length > 0 && <div data-nodrag className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-border bg-surface/90 px-3 py-1.5 text-xs text-text-secondary pointer-events-none">Overview. Zoom in for agents and their calls.</div>}
@@ -479,7 +488,7 @@ function HoverCard({ n, agent, live, replicas, edges, nodeBy }: { n: GNode; agen
 
 /** The panel for the chosen node, in the manner of Obsidian's backlinks: what it is, who it talks to, and what it uses. */
 function Details({ n, onClose, onSelect, onLocal, all, edges }: { n: GNode; onClose: () => void; onSelect: (id: string) => void; onLocal: () => void; all: Map<string, GNode>; edges: GEdge[] }) {
-  const { agents, links } = useAgents(); const a = n.kind === "agent" ? agents.find((x) => x.id === n.id) : undefined;
+  const store = useAgents(); const { agents, links } = store; const a = n.kind === "agent" ? agents.find((x) => x.id === n.id) : undefined;
   const Icon = ICONS[n.icon] ?? Bot; const t = a ? totals(a, 7) : null; const today = a?.daily[a.daily.length - 1];
   const out = edges.filter((e) => e.kind === "agent" && e.from === n.id), inn = edges.filter((e) => e.kind === "agent" && e.to === n.id);
   const res = edges.filter((e) => e.kind === "resource" && (e.from === n.id || e.to === n.id));
@@ -500,7 +509,7 @@ function Details({ n, onClose, onSelect, onLocal, all, edges }: { n: GNode; onCl
         {a ? (
           <>
             <p className="text-text-secondary">{a.description}</p>
-            <div className="space-y-1.5">{row("Department", a.department)}{row("Framework", a.framework)}{row("Control", CONTROL_LABEL[a.control])}{row("State", HEALTH_LABEL[healthOf(a)])}{row("Owner", a.owner)}{row("Models", a.models.length ? a.models.join(", ") : "Not reported")}{row("Tools", a.tools.length)}</div>
+            <div className="space-y-1.5">{row("Department", a.department)}{row("Framework", a.framework)}{row("Control", CONTROL_LABEL[a.control])}{row("State", HEALTH_LABEL[healthOf(a)])}{row("Network security", <PostureBadge p={assess(a, a.network, store.networks, memberCounts(Object.fromEntries(agents.map((x) => [x.id, x.network]))))} />)}{row("Owner", a.owner)}{row("Models", a.models.length ? a.models.join(", ") : "Not reported")}{row("Tools", a.tools.length)}</div>
             {a.control !== "inventory" && t && today && <div className="grid grid-cols-2 gap-2">
               {[["Runs today", int(today.executions)], ["Failed, 7 days", t.executions ? pct(t.failureRate) : "n/a"], ["p95 time", a.p95Ms ? dur(a.p95Ms) : "n/a"], ["Cost today", usd(today.costUsd, 2)]].map(([k, v]) => <div key={k} className="rounded-md border border-border px-2.5 py-2"><div className="text-[11px] text-text-tertiary">{k}</div><div className="text-sm font-semibold tabular-nums">{v}</div></div>)}</div>}
           </>

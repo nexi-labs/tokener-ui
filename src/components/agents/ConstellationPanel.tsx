@@ -3,7 +3,9 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Cloud, Minus, Pause, Play, Plus, X } from "lucide-react";
+import { ArrowRight, Cloud, Minus, Pause, Play, Plus, ShieldCheck, X } from "lucide-react";
+import { PostureBadge } from "@/components/agents/NetworkBits";
+import { REACH, assess, memberCounts } from "@/lib/agents/network";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { KeyValue, MetricChart, Tabs } from "@/components/mlops/ui";
@@ -95,6 +97,7 @@ function Body({ sel, tab, setTab, onClose, onSelect, replicas }: { sel: Selectio
   }
 
   const a = byId.get(sel.id); if (!a) return null;
+  const networks = store.networks; const posture = assess(a, a.network, networks, memberCounts(Object.fromEntries(agents.map((x) => [x.id, x.network]))));
   const t = totals(a); const t7 = totals(a, 7); const h = healthOf(a); const measured = a.control !== "inventory";
   const mine = links.filter((l) => l.from === a.id || l.to === a.id); const exp = exposures.find((e) => e.agentId === a.id);
   const pol = policiesFor(a, policies); const l = live[a.id]; const share = budgetShare(a);
@@ -132,6 +135,12 @@ function Body({ sel, tab, setTab, onClose, onSelect, replicas }: { sel: Selectio
         <p className="text-xs text-text-tertiary">Sample figures. {a.control === "observed" ? "This agent reports its own figures, so they are as complete as its reporting." : "Every call passed through tok∑ner, so these are counted, not reported."}</p>
       </> : <p className="text-sm text-text-secondary rounded-md bg-surface-muted px-3 py-3">This agent is registered by hand and reports nothing, so there are no figures to chart. Connect it, or move it to Observed, to see runs and cost.</p>)}
       {tab === "connections" && <>
+        <div className="rounded-md border border-border p-3 space-y-1.5" data-testid="panel-security">
+          <div className="flex items-center gap-2 text-sm font-medium"><ShieldCheck size={15} /> Network security <span className="ml-auto"><PostureBadge p={posture} /></span></div>
+          {a.network ? <div className="text-xs text-text-secondary">{REACH.find((r) => r.id === a.network!.reach)!.label}{a.network.network ? `, in ${networks.find((n) => n.id === a.network!.network)?.name ?? "a network"}` : ""}. Outbound: {a.network.egress.mode === "allow-all" ? "anywhere" : a.network.egress.mode === "deny-all" ? "nothing" : `${a.network.egress.rules.length} allowed`}. {posture.findings.find((f) => f.severity !== "good") ? <>Next fix: {posture.findings.find((f) => f.severity !== "good")!.title.toLowerCase()}.</> : "Nothing to fix."}</div>
+            : <div className="text-xs text-text-secondary">No network setup. Any caller in the organisation can reach it, and nothing limits where it can call.</div>}
+          <Link href={`/agents/registry/${a.id}?tab=network`} className="inline-flex items-center gap-1 text-xs underline text-text-secondary hover:text-text-primary">{a.network ? "Open the Network tab" : "Set it up"} <ArrowRight size={11} /></Link>
+        </div>
         {exp && <div className="rounded-md border border-border p-3 space-y-1.5"><div className="flex items-center gap-2 text-sm font-medium"><Cloud size={15} /> Reachable from outside</div>
           <div className="text-xs text-text-secondary">{{ gateway: "Through the tok∑ner gateway", "public-url": "On a public address", webhook: "Through a webhook" }[exp.via]}. {exp.auth === "none" ? <span className="text-status-down font-medium">There is no authentication.</span> : `Callers use ${exp.auth === "jwt" ? "a signed token" : "an application key"}.`} {compact(exp.requests24h)} requests in 24 hours.</div><code className="block text-[11px] text-text-tertiary break-all">{exp.url}</code></div>}
         {mine.length === 0 && !exp && <p className="text-sm text-text-tertiary">This agent does not talk to other agents.</p>}

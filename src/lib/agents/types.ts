@@ -3,6 +3,7 @@ import type { MemoryConfig } from "./memory";
 import type { Execution } from "./execution";
 import type { SwitchEvent } from "./autoswitch";
 import type { Binding } from "./connectors";
+import type { NetworkConfig } from "./network";
 
 /** Governed: every call passes through the gateway. Observed: the agent reports what it did. Inventory: registered by hand, nothing measured. (docs/47, section 4) */
 export type ControlLevel = "governed" | "observed" | "inventory";
@@ -51,6 +52,8 @@ export type Agent = {
   lastSwitch?: { from: Execution; to: string; strategy: string; at: string };
   /** When the agent last changed runtime (on the sample clock) and the recent changes with the reason for each, whether a person or a rule made them. */
   switching?: { lastSwitchSim?: number; log: SwitchEvent[] };
+  /** How the agent is reached and what it may reach: reach, ingress, egress and logging. Absent means no network setup, and the agent is open to anyone in the organisation. */
+  network?: NetworkConfig;
   /** The project in Tenant Management this agent belongs to. Knowledge bases open to a project are open to its agents. */
   project?: string;
   /** The connections, channels and knowledge bases from the organisation that this agent uses. Some bindings follow from how it starts and who decides. */

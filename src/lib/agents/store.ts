@@ -14,6 +14,7 @@ import { RUNTIME_BY_ID, defaultExecution, validateExecution, type Execution, typ
 import { getSimNow } from "./loadsim";
 import type { SwitchEvent } from "./autoswitch";
 import { planSwitch, rollbackNote, switchNote, type Plan, type Strategy } from "./switching";
+import { assess, memberCounts, membersOf, presetConfig, sampleNetworkConfigs, sampleNetworks, validateNetwork, type AgentNetwork, type NetworkConfig } from "./network";
 import type { Exposure, Link, Live, Policy } from "./topology";
 import type { Agent, AgentState, ControlLevel, Trace, Workflow, WorkflowPattern } from "./types";
 import type { ForgeSpec } from "./codegen";
@@ -23,7 +24,7 @@ import { validateSpec } from "./codegen";
  * In memory store behind the Agent OS screens in the sample workspace. It lives only in this browser tab and starts again from the sample on reload.
  * A signed-in workspace does not use it: those screens say they are not connected until the agent registry API exists (docs/47, section 7).
  */
-export type AgentsState = { agents: Agent[]; traces: Trace[]; workflows: Workflow[]; links: Link[]; exposures: Exposure[]; policies: Policy[]; live: Record<string, Live>; evalSuites: EvalSuite[]; evalRuns: EvalRun[]; memoryItems: Record<string, MemoryItem[]>; approvals: Approval[]; spaces: Space[] };
+export type AgentsState = { agents: Agent[]; traces: Trace[]; workflows: Workflow[]; links: Link[]; exposures: Exposure[]; policies: Policy[]; live: Record<string, Live>; evalSuites: EvalSuite[]; evalRuns: EvalRun[]; memoryItems: Record<string, MemoryItem[]>; approvals: Approval[]; spaces: Space[]; networks: AgentNetwork[] };
 export type Result<T = void> = { ok: true; value: T } | { ok: false; error: string };
 
 let state: AgentsState | null = null;
@@ -33,7 +34,8 @@ const nid = (p: string) => `${p}_${(++seq).toString(36)}`;
 const init = (): AgentsState => {
   const { agents } = sampleAgents(); const topo = sampleTopology(); const ev = sampleEvals(agents);
   const traces = [...sampleTraces(agents, topo.links, Date.now(), sampleHub()), ...ev.traces].sort((x, y) => Date.parse(y.startedAt) - Date.parse(x.startedAt));
-  return { agents, traces, workflows: sampleWorkflows(), ...topo, evalSuites: ev.suites, evalRuns: ev.runs, memoryItems: sampleMemoryItems(), approvals: sampleApprovals(), spaces: sampleSpaces() };
+  const nets = sampleNetworks(); const cfgs = sampleNetworkConfigs(agents);
+  return { agents: agents.map((a) => (cfgs[a.id] ? { ...a, network: cfgs[a.id] } : a)), networks: nets, traces, workflows: sampleWorkflows(), ...topo, evalSuites: ev.suites, evalRuns: ev.runs, memoryItems: sampleMemoryItems(), approvals: sampleApprovals(), spaces: sampleSpaces() };
 };
 const get = (): AgentsState => (state ??= init());
 function set(patch: Partial<AgentsState>) { state = { ...get(), ...patch }; listeners.forEach((l) => l()); }
@@ -43,13 +45,16 @@ export function useAgents(): AgentsState { return useSyncExternalStore((cb) => {
 export const resetAgents = () => { state = init(); listeners.forEach((l) => l()); };
 const patchAgent = (id: string, fn: (a: Agent) => Agent) => set({ agents: get().agents.map((a) => (a.id === id ? fn(a) : a)) });
 
-const SENSITIVE = /refund|merge|delete|update_|post_|create_claim|reset_password|payout|transfer|write|issue_/;
+export const SENSITIVE = /refund|merge|delete|update_|post_|create_claim|reset_password|payout|transfer|write|issue_/;
+
+const configs = (): Record<string, NetworkConfig | undefined> => Object.fromEntries(get().agents.map((a) => [a.id, a.network]));
 
 export const agents = {
   /** Agent Forge saves here. The agent is governed from the start because it is built to call everything through the gateway. */
-  createFromForge(spec: ForgeSpec): Result<Agent> {
+  createFromForge(spec: ForgeSpec, network?: NetworkConfig): Result<Agent> {
     const issues = validateSpec(spec);
     if (issues.length) return { ok: false, error: issues[0].message };
+    if (network) { const bad = validateNetwork(network, { tools: spec.tools.flatMap((t) => t.allow.map((tool) => ({ server: t.server, tool, sensitive: SENSITIVE.test(tool), approval: false }))), control: "governed" }, get().networks).find((i) => i.level === "error"); if (bad) return { ok: false, error: bad.message }; }
     if (get().agents.some((a) => a.name === spec.name && a.state !== "retired")) return { ok: false, error: `An agent named ${spec.name} already exists. Choose another name, or retire the old one first.` };
     const now = new Date().toISOString();
     const a: Agent = {
@@ -58,7 +63,7 @@ export const agents = {
       tools: spec.tools.flatMap((t) => t.allow.map((tool) => ({ server: t.server, tool, sensitive: SENSITIVE.test(tool), approval: spec.guardrails.approvalFor.includes(tool) }))),
       capabilities: spec.capabilities.map((c) => c.id), budget: { monthlyUsd: spec.budget.monthlyUsd, spentUsd: 0 },
       daily: Array.from({ length: 30 }, () => ({ executions: 0, failures: 0, costUsd: 0, tokens: 0 })), p95Ms: 0, lastSeen: now, createdAt: now,
-      versions: [{ version: spec.version, at: now, note: "Created in Agent Forge" }], spec, execution: spec.execution ?? defaultExecution("serverless"),
+      versions: [{ version: spec.version, at: now, note: "Created in Agent Forge" }], spec, execution: spec.execution ?? defaultExecution("serverless"), network,
     };
     set({ agents: [a, ...get().agents] });
     return { ok: true, value: a };
@@ -77,19 +82,37 @@ export const agents = {
       capabilities: spec.capabilities.map((c) => c.id), budget: { ...a.budget, monthlyUsd: spec.budget.monthlyUsd }, versions: [{ version: spec.version, at: now, note: "Saved from Agent Forge" }, ...a.versions.map((v) => (v.note === "Current" ? { ...v, note: "Earlier release" } : v))] }));
     return { ok: true, value: get().agents.find((a) => a.id === id)! };
   },
-  register(input: { name: string; title: string; description: string; owner: string; department: string; project?: string; framework: string; endpoint: string; control: ControlLevel; risk: Agent["risk"] }): Result<Agent> {
+  register(input: { name: string; title: string; description: string; owner: string; department: string; project?: string; framework: string; endpoint: string; control: ControlLevel; risk: Agent["risk"]; network?: NetworkConfig }): Result<Agent> {
     if (!/^[a-z][a-z0-9-]{1,62}$/.test(input.name)) return { ok: false, error: "Use 2 to 63 lowercase letters, digits and hyphens for the name." };
     if (!input.owner.trim()) return { ok: false, error: "Every agent has an accountable owner." };
     if (!input.department.trim()) return { ok: false, error: "Choose the department this agent belongs to, so its cost and access land in the right place." };
     if (get().agents.some((a) => a.name === input.name && a.state !== "retired")) return { ok: false, error: `An agent named ${input.name} already exists.` };
+    if (input.network) { const bad = validateNetwork(input.network, { tools: [], control: input.control }, get().networks).find((i) => i.level === "error"); if (bad) return { ok: false, error: bad.message }; }
     const now = new Date().toISOString();
     const a: Agent = {
       id: nid("agt"), name: input.name, title: input.title || input.name, description: input.description, owner: input.owner, department: input.department, project: input.project || undefined, framework: input.framework, runtime: "external",
       environment: "production", risk: input.risk, version: "1", state: "active", control: input.control, origin: "registered", models: [], tools: [], capabilities: [], budget: { monthlyUsd: 0, spentUsd: 0 },
-      daily: Array.from({ length: 30 }, () => ({ executions: 0, failures: 0, costUsd: 0, tokens: 0 })), p95Ms: 0, lastSeen: now, createdAt: now, versions: [{ version: "1", at: now, note: "Registered" }], endpoint: input.endpoint,
+      daily: Array.from({ length: 30 }, () => ({ executions: 0, failures: 0, costUsd: 0, tokens: 0 })), p95Ms: 0, lastSeen: now, createdAt: now, versions: [{ version: "1", at: now, note: "Registered" }], endpoint: input.endpoint, network: input.network,
     };
     set({ agents: [a, ...get().agents] });
     return { ok: true, value: a };
+  },
+  /** Saves how the agent is reached and what it may reach. An error stops the save; a warning is shown and does not. */
+  setNetwork(id: string, cfg: NetworkConfig, by = "nestor@nexi.com"): Result<NetworkConfig> {
+    const a = get().agents.find((x) => x.id === id);
+    if (!a) return { ok: false, error: "That agent does not exist." };
+    if (a.state === "retired") return { ok: false, error: "A retired agent cannot be changed." };
+    const bad = validateNetwork(cfg, a, get().networks).find((i) => i.level === "error"); if (bad) return { ok: false, error: bad.message };
+    const next: NetworkConfig = { ...cfg, updatedAt: new Date().toISOString(), updatedBy: by };
+    const now = next.updatedAt; const prev = a.network ? assess(a, a.network, get().networks, memberCounts(configs())) : null; const after = assess(a, next, get().networks, memberCounts({ ...configs(), [id]: next }));
+    patchAgent(id, (x) => ({ ...x, network: next, versions: [{ version: x.version, at: now, note: `Network ${prev ? "changed" : "set up"}: ${after.label.toLowerCase()}, grade ${after.grade}` }, ...x.versions] }));
+    return { ok: true, value: next };
+  },
+  clearNetwork(id: string): Result {
+    const a = get().agents.find((x) => x.id === id); if (!a) return { ok: false, error: "That agent does not exist." };
+    const now = new Date().toISOString();
+    patchAgent(id, (x) => ({ ...x, network: undefined, versions: [{ version: x.version, at: now, note: "Network setup removed" }, ...x.versions] }));
+    return { ok: true, value: undefined };
   },
   setState(id: string, next: AgentState): Result {
     const a = get().agents.find((x) => x.id === id);
@@ -396,3 +419,49 @@ export const contexts = {
 };
 
 export const agentsStoreApprovals = approvals;
+
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// Agent Networks: the named networks agents can be members of. An agent belongs to the network named in its own setup.
+
+export const agentNetworks = {
+  create(input: { name: string; description: string; kind: AgentNetwork["kind"]; identity: AgentNetwork["identity"]; owner: string }): Result<AgentNetwork> {
+    const name = input.name.trim();
+    if (name.length < 2 || name.length > 48) return { ok: false, error: "Name the network with 2 to 48 characters." };
+    if (get().networks.some((n) => n.name.toLowerCase() === name.toLowerCase())) return { ok: false, error: `A network named ${name} already exists.` };
+    if (!input.owner.trim()) return { ok: false, error: "Every network has an accountable owner." };
+    const net: AgentNetwork = { id: nid("net"), name, description: input.description.trim(), kind: input.kind, identity: input.identity, peers: [], owner: input.owner.trim(), createdAt: new Date().toISOString() };
+    set({ networks: [...get().networks, net] });
+    return { ok: true, value: net };
+  },
+  update(id: string, patch: Partial<Pick<AgentNetwork, "name" | "description" | "kind" | "identity" | "owner">>): Result {
+    const cur = get().networks.find((n) => n.id === id); if (!cur) return { ok: false, error: "That network does not exist." };
+    const name = (patch.name ?? cur.name).trim();
+    if (name.length < 2 || name.length > 48) return { ok: false, error: "Name the network with 2 to 48 characters." };
+    if (get().networks.some((n) => n.id !== id && n.name.toLowerCase() === name.toLowerCase())) return { ok: false, error: `A network named ${name} already exists.` };
+    set({ networks: get().networks.map((n) => (n.id === id ? { ...n, ...patch, name } : n)) });
+    return { ok: true, value: undefined };
+  },
+  /** Peering is mutual: each network lists the other, so a call is allowed in both directions. */
+  setPeers(id: string, peers: string[]): Result {
+    if (!get().networks.some((n) => n.id === id)) return { ok: false, error: "That network does not exist." };
+    const want = new Set(peers.filter((p) => p !== id && get().networks.some((n) => n.id === p)));
+    set({ networks: get().networks.map((n) => (n.id === id ? { ...n, peers: [...want] } : want.has(n.id) ? { ...n, peers: [...new Set([...n.peers, id])] } : { ...n, peers: n.peers.filter((p) => p !== id) })) });
+    return { ok: true, value: undefined };
+  },
+  /** A network that private agents depend on cannot go, because they would be left reachable by no one. */
+  remove(id: string): Result {
+    const members = membersOf(id, configs()); const priv = get().agents.filter((a) => members.includes(a.id) && a.network?.reach === "private");
+    if (priv.length) return { ok: false, error: `${priv.length === 1 ? priv[0].title + " is" : priv.length + " agents are"} private to this network. Move ${priv.length === 1 ? "it" : "them"} to another network first.` };
+    set({ networks: get().networks.filter((n) => n.id !== id).map((n) => ({ ...n, peers: n.peers.filter((p) => p !== id) })), agents: get().agents.map((a) => (a.network?.network === id ? { ...a, network: { ...a.network, network: undefined } } : a)) });
+    return { ok: true, value: undefined };
+  },
+  /** Puts an agent in a network, or takes it out. The agent must already have a network setup; it is given a sensible one if it has none. */
+  setMember(netId: string | undefined, agentId: string, join: boolean): Result {
+    const a = get().agents.find((x) => x.id === agentId); if (!a) return { ok: false, error: "That agent does not exist." };
+    if (!a.network) { if (!join) return { ok: true, value: undefined }; return agents.setNetwork(agentId, { ...presetFor(a), network: netId }).ok ? { ok: true, value: undefined } : { ok: false, error: "That agent could not join." }; }
+    if (!join && a.network.reach === "private") return { ok: false, error: `${a.title} is private to this network. Change its reach first.` };
+    return agents.setNetwork(agentId, { ...a.network, network: join ? netId : undefined }) as Result<unknown> as Result;
+  },
+};
+const presetFor = (a: Agent) => presetConfig("internal", a);

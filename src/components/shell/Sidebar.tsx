@@ -3,10 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronsLeft, ChevronsRight, X } from "lucide-react";
+import { ChevronDown, ChevronsLeft, ChevronsRight, Clock, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { NAV_GROUPS, TOP_NAV, itemActive, type NavItem } from "@/lib/nav";
+import { RECENT_OPEN_KEY, RECENT_KEY, pushRecent, readRecent, visibleRecent, type RecentEntry } from "@/lib/recent";
+import { agentsNow } from "@/lib/agents/store";
 import { useShell } from "./ShellContext";
 import { AccountFooter } from "./AccountFooter";
 
@@ -15,6 +17,22 @@ export function Sidebar() {
   const groups = NAV_GROUPS.filter((g) => !g.operatorOnly || role === "operator");
   const pathname = usePathname();
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const [recent, setRecent] = useState<RecentEntry[]>([]);
+  const [recentOpen, setRecentOpen] = useState(true);
+
+  // Remember each page as it is opened. The list is read after mount, so the server and the first paint agree.
+  useEffect(() => {
+    setRecent((prev) => {
+      const base = prev.length ? prev : readRecent();
+      const next = pushRecent(base, pathname);
+      try { sessionStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
+      return next;
+    });
+  }, [pathname]);
+  useEffect(() => { try { if (localStorage.getItem(RECENT_OPEN_KEY) === "0") setRecentOpen(false); } catch { /* storage unavailable */ } }, []);
+  const toggleRecent = () => setRecentOpen((v) => { try { localStorage.setItem(RECENT_OPEN_KEY, v ? "0" : "1"); } catch { /* storage unavailable */ } return !v; });
+  const agentName = (path: string) => { const m = /^\/agents\/registry\/([^/]+)/.exec(path); return m ? agentsNow().agents.find((a) => a.id === m[1])?.title : undefined; };
+  const recents = visibleRecent(recent, pathname, agentName);
 
   // The group holding the active route opens itself; the rest stay closed.
   useEffect(() => {
@@ -49,13 +67,13 @@ export function Sidebar() {
           rail ? "lg:w-[68px]" : "lg:w-[256px]"
         )}
       >
-        <div className={clsx("flex items-center justify-between h-14 px-4 shrink-0", rail && "lg:justify-center lg:px-0")}>
-          <Link href="/dashboard" className="flex items-center">
+        <div className="relative flex items-center justify-center h-14 px-4 shrink-0">
+          <Link href="/dashboard" className="flex items-center justify-center">
             <Image
               src="/brand/logo-dark.svg"
               alt="tok∑ner"
-              width={104}
-              height={33}
+              width={88}
+              height={28}
               priority
               className={clsx(rail && "lg:hidden")}
             />
@@ -66,7 +84,7 @@ export function Sidebar() {
           <button
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden h-9 w-9 flex items-center justify-center rounded-md text-text-tertiary hover:text-text-inverse hover:bg-white/10"
+            className="lg:hidden absolute right-3 top-2.5 h-9 w-9 flex items-center justify-center rounded-md text-text-tertiary hover:text-text-inverse hover:bg-white/10"
           >
             <X size={18} />
           </button>
@@ -75,6 +93,29 @@ export function Sidebar() {
         <nav className="flex-1 overflow-y-auto px-2.5 py-2 flex flex-col gap-0.5">
           {TOP_NAV.map((item) => (
             <NavLink key={item.href} item={item} pathname={pathname} rail={rail} />
+          ))}
+          {recents.length > 0 && (rail ? (
+            <Link href={recents[0].href} title={`Recent: ${recents[0].label}`} className="hidden lg:flex h-9 shrink-0 items-center justify-center rounded-md text-text-tertiary hover:text-text-inverse hover:bg-white/[0.05]">
+              <Clock size={17} strokeWidth={1.75} />
+            </Link>
+          ) : (
+            <div className="flex flex-col shrink-0" data-testid="recent">
+              <button onClick={toggleRecent} aria-expanded={recentOpen} className="flex items-center gap-3 h-9 shrink-0 px-2.5 rounded-md text-[13px] text-text-tertiary hover:text-text-inverse hover:bg-white/[0.05] transition-colors">
+                <Clock size={17} strokeWidth={1.75} className="shrink-0" />
+                <span className="flex-1 text-left truncate font-medium">Recent</span>
+                <ChevronDown size={14} className={clsx("shrink-0 transition-transform duration-150", recentOpen ? "rotate-0" : "-rotate-90")} />
+              </button>
+              {recentOpen && (
+                <div className="ml-[18px] pl-3 border-l border-white/10 flex flex-col shrink-0 gap-0.5 my-0.5">
+                  {recents.map((r) => (
+                    <Link key={r.href} href={r.href} title={`${r.group}: ${r.label}${r.detail ? " / " + r.detail : ""}`} className="flex items-center gap-2 h-8 px-2.5 rounded-md text-[13px] text-text-tertiary hover:text-text-inverse hover:bg-white/[0.05] transition-colors min-w-0">
+                      <span className="truncate">{r.label}</span>
+                      {r.detail && <span className="truncate text-[11px] text-text-tertiary/60">{r.detail}</span>}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
           <div className="h-px bg-white/10 my-2.5 mx-2 shrink-0" />
 

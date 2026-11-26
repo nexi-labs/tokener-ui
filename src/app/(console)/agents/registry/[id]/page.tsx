@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ArrowLeft, Orbit, Pause, Play, Plug, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
@@ -15,6 +15,7 @@ import { ConnectionWizard } from "@/components/mlops/ConnectionWizard";
 import { CodeBlock } from "@/components/mlops/Code";
 import { ControlBadge, FrameworkMark, RiskBadge, ShareBar, StateBadge } from "@/components/agents/bits";
 import { MemoryPanel } from "@/components/agents/MemoryPanel";
+import { NetworkPanel } from "@/components/agents/NetworkPanel";
 import { RuntimePanel } from "@/components/agents/RuntimePanel";
 import { ConnectionsPanel } from "@/components/agents/ConnectionsPanel";
 import { ForgeGlyph } from "@/components/agents/AgentGlyphs";
@@ -26,14 +27,15 @@ import { policiesFor, POLICY_BY_ID, PROTOCOL_BY_ID } from "@/lib/agents/topology
 import { ago, compact, dur, int, pct, usd } from "@/lib/agents/format";
 import { toast } from "@/lib/mlops/toast";
 
-type Tab = "overview" | "runs" | "runtime" | "memory" | "connections" | "governance" | "connection" | "versions";
+type Tab = "overview" | "runs" | "runtime" | "network" | "memory" | "connections" | "governance" | "connection" | "versions";
 
 export default function AgentDetail() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { agents, traces, links, exposures, policies } = useAgents();
   const a = agents.find((x) => x.id === id);
-  const [tab, setTab] = useState<Tab>("overview");
+  const q = useSearchParams(); const asked = q.get("tab");
+  const [tab, setTab] = useState<Tab>(asked === "network" || asked === "runtime" || asked === "runs" || asked === "memory" ? asked : "overview");
   const [confirm, setConfirm] = useState<"suspend" | "retire" | null>(null);
   const [wizard, setWizard] = useState(false);
   const [budget, setBudget] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export default function AgentDetail() {
   };
   const cardIssues = validateCard(card);
   const canWizard = !!adapter?.connect;
-  const tabs: { id: Tab; label: string; count?: number }[] = [{ id: "overview", label: "Overview" }, { id: "runs", label: "Runs", count: mine.length }, { id: "runtime", label: "Runtime" }, { id: "memory", label: "Memory" }, { id: "connections", label: "Connections" }, { id: "governance", label: "Governance" }, { id: "connection", label: "Address and keys" }, { id: "versions", label: "Versions", count: a.versions.length }];
+  const tabs: { id: Tab; label: string; count?: number }[] = [{ id: "overview", label: "Overview" }, { id: "runs", label: "Runs", count: mine.length }, { id: "runtime", label: "Runtime" }, { id: "network", label: "Network" }, { id: "memory", label: "Memory" }, { id: "connections", label: "Connections" }, { id: "governance", label: "Governance" }, { id: "connection", label: "Address and keys" }, { id: "versions", label: "Versions", count: a.versions.length }];
 
   return (
     <div className="space-y-6">
@@ -97,6 +99,7 @@ export default function AgentDetail() {
 
       {tab === "memory" && <MemoryPanel key={a.id + a.version + (a.versions[0]?.at ?? "")} a={a} />}
       {tab === "runtime" && <RuntimePanel key={a.id} a={a} />}
+      {tab === "network" && <NetworkPanel key={a.id} a={a} />}
       {tab === "connections" && <ConnectionsPanel key={a.id + (a.versions[0]?.at ?? "")} a={a} />}
 
       {tab === "governance" && <div className="space-y-5">

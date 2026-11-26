@@ -2,12 +2,13 @@
 
 import clsx from "clsx";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Cloud } from "lucide-react";
+import { ChevronDown, ChevronUp, Cloud, ShieldCheck } from "lucide-react";
+import { BUCKETS, type Bucket } from "@/lib/agents/network";
 import { HEALTH_COLOR, HEALTH_LABEL, POLICY_KINDS, PROTOCOLS, STATE_COLORS, type Health, type PolicyKind, type Protocol } from "@/lib/agents/topology";
 
-export type Highlight = { type: "protocol"; id: Protocol } | { type: "policy"; id: PolicyKind } | { type: "health"; id: Health } | { type: "exposure"; id: "exposure" } | null;
-export type Layers = { groups: boolean; exposure: boolean; labels: boolean; traffic: boolean; retired: boolean; connectors: boolean };
-type Counts = { protocols: Record<Protocol, number>; policies: Record<PolicyKind, number>; health: Partial<Record<Health, number>>; exposed: number };
+export type Highlight = { type: "protocol"; id: Protocol } | { type: "policy"; id: PolicyKind } | { type: "health"; id: Health } | { type: "exposure"; id: "exposure" } | { type: "security"; id: Bucket } | null;
+export type Layers = { groups: boolean; exposure: boolean; labels: boolean; traffic: boolean; retired: boolean; connectors: boolean; security: boolean };
+type Counts = { protocols: Record<Protocol, number>; policies: Record<PolicyKind, number>; health: Partial<Record<Health, number>>; exposed: number; security: Record<Bucket, number> };
 
 const HEALTH_ORDER: Health[] = ["healthy", "degraded", "failing", "suspended", "unmeasured"];
 
@@ -44,6 +45,15 @@ export function Legend({ off, setOff, layers, setLayers, counts, highlight, setH
             <span className="w-[26px] grid place-items-center"><Cloud size={16} /></span><span className={clsx("flex-1", !layers.exposure && "line-through")}>Exposed to the internet</span><span className="text-xs text-text-tertiary tabular-nums">{counts.exposed}</span>
           </button>
 
+          <div className={head}><span>Network security</span></div>
+          {BUCKETS.map((b) => (
+            <button key={b.id} type="button" title={b.blurb} className={clsx(row, !layers.security && "opacity-45")} {...hot({ type: "security", id: b.id })}>
+              <span className="w-[26px] grid place-items-center"><ShieldCheck size={16} color={b.color} strokeWidth={2.2} /></span>
+              <span className="flex-1">{b.label}</span><span className="text-xs text-text-tertiary tabular-nums">{counts.security[b.id]}</span>
+            </button>
+          ))}
+          <p className="px-2 pt-1 text-[11px] leading-snug text-text-tertiary">A shield on an agent means it has a network setup. Its colour is the grade. Point at a line to light up those agents.</p>
+
           <div className={head}><span>Policies around an agent</span>
             <button className="normal-case tracking-normal font-normal text-text-secondary hover:text-text-primary" onClick={() => setOff({ ...off, policies: off.policies.length ? [] : POLICY_KINDS.map((p) => p.id) })}>{off.policies.length ? "Show all" : "Hide all"}</button></div>
           {POLICY_KINDS.map((p) => {
@@ -74,7 +84,7 @@ export function Legend({ off, setOff, layers, setLayers, counts, highlight, setH
           <p className="px-2 pt-1 text-[11px] leading-snug text-text-tertiary">Lines carry moving dashes while work is handed on. A connection, channel or knowledge base lights up when an agent calls it.</p>
 
           <div className={head}><span>Show</span></div>
-          {([["groups", "Department boxes"], ["connectors", "Connections, channels, knowledge"], ["labels", "Names"], ["traffic", "Moving traffic"], ["retired", "Retired agents"]] as const).map(([k, label]) => (
+          {([["groups", "Department boxes"], ["connectors", "Connections, channels, knowledge"], ["security", "Security shields"], ["labels", "Names"], ["traffic", "Moving traffic"], ["retired", "Retired agents"]] as const).map(([k, label]) => (
             <label key={k} className={clsx(row, "cursor-pointer")}><input type="checkbox" checked={layers[k]} onChange={() => setLayers({ ...layers, [k]: !layers[k] })} className="accent-[#07191E]" /><span>{label}</span></label>
           ))}
         </div>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import NextLink from "next/link";
-import { Activity, AlertTriangle, ChevronDown, ChevronUp, Cloud, ClipboardList, Eye, Hammer, Hourglass, Layers as Stack, Maximize, Moon, Network, Pause, Plug, RotateCcw, Search, ShieldCheck, Sun, ZoomIn, ZoomOut } from "lucide-react";
+import { Activity, AlertTriangle, ChevronDown, ChevronUp, Cloud, ClipboardList, Eye, Hammer, Hourglass, Layers as Stack, Maximize, Maximize2, Minimize2, Moon, Network, Pause, Plug, RotateCcw, Search, ShieldAlert, ShieldCheck, Sun, X, ZoomIn, ZoomOut } from "lucide-react";
 import { NodeIcon } from "@/components/studio/icons";
 import { ADAPTER_BY_ID } from "@/lib/agents/adapters";
 import { liveOf, totals, useAgents } from "@/lib/agents/store";
@@ -17,6 +17,8 @@ import {
   type AppliedPolicy, type Exposure, type Health, type Link, type PolicyKind, type Protocol, type Pt,
 } from "@/lib/agents/topology";
 import { Legend, type Highlight, type Layers } from "./ConstellationLegend";
+import { assess, bucketOf, memberCounts, type Bucket, type Posture } from "@/lib/agents/network";
+import { postureColor } from "./NetworkBits";
 import { ConstellationPanel, type Selection } from "./ConstellationPanel";
 import { BandBox, LIVE_COLOR, ResourceNode, resourcePath } from "./ConstellationResources";
 
@@ -38,9 +40,9 @@ const faint = "rgb(var(--c-text-tertiary))";
 const surface = "rgb(var(--c-surface))";
 const border = "rgb(var(--c-border-strong))";
 
-export function Constellation({ initialSelect, trace, onSwitchView }: { initialSelect?: string; trace?: string; onSwitchView?: () => void }) {
+export function Constellation({ initialSelect, trace, onSwitchView, full, onToggleFull }: { initialSelect?: string; trace?: string; onSwitchView?: () => void; full?: boolean; onToggleFull?: () => void }) {
   const store = useAgents();
-  const { agents, links, exposures, policies, traces } = store;
+  const { agents, links, exposures, policies, traces, networks } = store;
   const live = useMemo(() => liveOf(store), [store]);
   const hub = useHub();
   const wrap = useRef<HTMLDivElement>(null);
@@ -52,7 +54,7 @@ export function Constellation({ initialSelect, trace, onSwitchView }: { initialS
   const [hover, setHover] = useState<Hover>(null);
   const [highlight, setHighlight] = useState<Highlight>(null);
   const [off, setOff] = useState<{ protocols: Protocol[]; policies: PolicyKind[] }>({ protocols: [], policies: [] });
-  const [layers, setLayers] = useState<Layers>({ groups: true, exposure: true, labels: true, traffic: true, retired: false, connectors: true });
+  const [layers, setLayers] = useState<Layers>({ groups: true, exposure: true, labels: true, traffic: true, retired: false, connectors: true, security: true });
   const [liveOn, setLiveOn] = useState(true);
   const [filters, setFilters] = useState<{ control: "all" | ControlLevel; dept: string; q: string }>({ control: "all", dept: "all", q: "" });
   const [reduced, setReduced] = useState(false);
@@ -221,6 +223,7 @@ export function Constellation({ initialSelect, trace, onSwitchView }: { initialS
     if (match) return !n.agentIds.some((id) => match.has(id));
     return false;
   };
+  const posture = useMemo(() => { const cfgs = Object.fromEntries(agents.map((x) => [x.id, x.network])); const counts = memberCounts(cfgs); return new Map(agents.map((x) => [x.id, assess(x, x.network, networks, counts)])); }, [agents, networks]);
   const hl = highlight;
   const agentDim = (a: Agent) => {
     if (match && !match.has(a.id)) return true;
@@ -229,6 +232,7 @@ export function Constellation({ initialSelect, trace, onSwitchView }: { initialS
     if (hl?.type === "policy") return !applied.get(a.id)!.some((p) => p.kind === hl.id);
     if (hl?.type === "health") return health.get(a.id) !== hl.id;
     if (hl?.type === "exposure") return !expOf.has(a.id);
+    if (hl?.type === "security") return bucketOf(posture.get(a.id)!) !== hl.id;
     return false;
   };
   const linkDim = (l: Link) => {
@@ -248,15 +252,19 @@ export function Constellation({ initialSelect, trace, onSwitchView }: { initialS
     policies: Object.fromEntries((Object.keys(POLICY_BY_ID) as PolicyKind[]).map((k) => [k, shown.filter((a) => applied.get(a.id)!.some((p) => p.kind === k)).length])) as Record<PolicyKind, number>,
     health: shown.reduce((m, a) => { m[health.get(a.id)!] = (m[health.get(a.id)!] ?? 0) + 1; return m; }, {} as Partial<Record<Health, number>>),
     exposed: exposures.filter((e) => shownIds.has(e.agentId)).length,
-  }), [links, shown, shownIds, applied, health, exposures]);
+    security: shown.reduce((m, a) => { m[bucketOf(posture.get(a.id)!)]++; return m; }, { strong: 0, fair: 0, weak: 0, none: 0 } as Record<Bucket, number>),
+  }), [links, shown, shownIds, applied, health, exposures, posture]);
 
   const selected = sel;
+  // Entering or leaving full page changes the size of the canvas, so the agents are fitted again once it has resized.
+  const firstFull = useRef(true); const latestFit = useRef(fit); latestFit.current = fit;
+  useEffect(() => { if (firstFull.current) { firstFull.current = false; return; } const t = setTimeout(() => latestFit.current(), 250); return () => clearTimeout(t); }, [full]); // eslint-disable-line react-hooks/exhaustive-deps
   const resetLayout = () => { setMoved({}); fitted.current = false; setTimeout(() => fit(), 0); };
   const showCloud = layers.exposure && exposures.some((e) => shownIds.has(e.agentId));
   const moving = Object.keys(moved).length > 0;
 
   return (
-    <div className={`relative h-[calc(100vh-190px)] min-h-[560px] rounded-lg border border-border bg-surface-subtle overflow-hidden select-none ${dark ? "tok-dark" : ""}`}>
+    <div data-full={full ? "true" : undefined} className={`${full ? "fixed inset-0 z-[70] !m-0 border-0" : "relative h-[calc(100vh-190px)] min-h-[560px] rounded-lg border"} border-border bg-surface-subtle overflow-hidden select-none ${dark ? "tok-dark" : ""}`}>
       <div ref={wrap} className="absolute inset-0 touch-none cursor-grab active:cursor-grabbing" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={() => { if (!drag.current) setHover(null); }}
         style={{ backgroundImage: "radial-gradient(var(--canvas-dot) 1px, transparent 1px)", backgroundSize: `${24 * view.k}px ${24 * view.k}px`, backgroundPosition: `${view.x}px ${view.y}px` }}>
         <svg width={size.w} height={size.h} role="group" aria-label="Agent topology. Drag to move, scroll to zoom." className="block">
@@ -352,7 +360,7 @@ export function Constellation({ initialSelect, trace, onSwitchView }: { initialS
             {/* agents */}
             {shown.map((a) => (
               <AgentNode key={a.id} a={a} p={pos[a.id]} lod={lod} k={view.k} u={u} health={health.get(a.id)!} policies={applied.get(a.id)!.filter((p) => !off.policies.includes(p.kind))}
-                live={live[a.id]} phase={flight.frame.agents[a.id]} replicas={liveOn ? flight.replicas[a.id] : undefined} scaling={liveOn && flight.scaling[a.id] ? ((flight.events.find((x) => x.agentId === a.id)?.to ?? 0) > (flight.events.find((x) => x.agentId === a.id)?.from ?? 0) ? "up" : "down") : undefined} reduced={reduced} exposed={layers.exposure ? expOf.get(a.id) : undefined} labels={layers.labels} dim={agentDim(a)} selected={sel?.kind === "agent" && sel.id === a.id} hot={hover?.kind === "agent" && hover.id === a.id}
+                live={live[a.id]} phase={flight.frame.agents[a.id]} replicas={liveOn ? flight.replicas[a.id] : undefined} scaling={liveOn && flight.scaling[a.id] ? ((flight.events.find((x) => x.agentId === a.id)?.to ?? 0) > (flight.events.find((x) => x.agentId === a.id)?.from ?? 0) ? "up" : "down") : undefined} reduced={reduced} exposed={layers.exposure ? expOf.get(a.id) : undefined} security={layers.security ? posture.get(a.id) : undefined} labels={layers.labels} dim={agentDim(a)} selected={sel?.kind === "agent" && sel.id === a.id} hot={hover?.kind === "agent" && hover.id === a.id}
                 onKey={() => { setSel({ kind: "agent", id: a.id }); reveal(a.id); }} />
             ))}
 
@@ -364,7 +372,8 @@ export function Constellation({ initialSelect, trace, onSwitchView }: { initialS
       </div>
 
       {/* toolbar */}
-      <div className="absolute top-3 right-3 flex items-center gap-2" style={{ right: sel ? 444 : 12 }}>
+      <div className="absolute top-3 right-3 flex items-center gap-2" style={{ right: (sel ? 444 : 12) + (full ? 46 : 0) }}>
+        {full && <button type="button" onClick={onToggleFull} onPointerDown={(e) => e.stopPropagation()} aria-label="Close full page" title="Close full page (Esc)" className="fixed top-3 z-[80] h-9 w-9 grid place-items-center rounded-full border border-border-strong bg-surface text-text-primary shadow-popover hover:bg-surface-muted" style={{ right: sel ? 444 : 12 }}><X size={17} /></button>}
         {onSwitchView && <button type="button" onClick={onSwitchView} onPointerDown={(e) => e.stopPropagation()} title="Show these agents as a graph, in the manner of Obsidian" aria-label="Graph view"
           className="h-8 inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2.5 text-[13px] font-medium text-text-secondary hover:bg-surface-muted"><Network size={14} /> Graph</button>}
         <button type="button" aria-pressed={dark} onClick={toggleDark} onPointerDown={(e) => e.stopPropagation()} title={dark ? "Switch the canvas to the light theme" : "Switch the canvas to the black theme"} aria-label={dark ? "Light theme" : "Black theme"}
@@ -387,6 +396,7 @@ export function Constellation({ initialSelect, trace, onSwitchView }: { initialS
         <Tool label="Zoom out" onClick={() => zoomAt(1 / 1.3)}><ZoomOut size={15} /></Tool>
         <span className="h-5 w-px bg-border" />
         <Tool label="Fit to screen" onClick={() => fit()}><Maximize size={15} /></Tool>
+        {onToggleFull && <Tool label={full ? "Close full page" : "Full page"} onClick={onToggleFull}>{full ? <Minimize2 size={15} /> : <Maximize2 size={15} />}</Tool>}
         <Tool label="Reset layout" onClick={resetLayout} disabled={!moving}><RotateCcw size={15} /></Tool>
       </div>
 
@@ -412,8 +422,8 @@ function Tool({ label, onClick, children, disabled }: { label: string; onClick: 
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-function AgentNode({ a, p, lod, k, u, health, policies, live, phase, replicas, scaling, reduced, exposed, labels, dim, selected, hot, onKey }: {
-  a: Agent; p: Pt; lod: number; k: number; u: number; health: Health; policies: AppliedPolicy[]; live?: { running: number; queued: number; pendingApprovals: number }; phase?: AgentFrame; replicas?: number; scaling?: "up" | "down"; reduced: boolean; exposed?: Exposure;
+function AgentNode({ a, p, lod, k, u, health, policies, live, phase, replicas, scaling, reduced, exposed, security, labels, dim, selected, hot, onKey }: {
+  a: Agent; p: Pt; lod: number; k: number; u: number; health: Health; policies: AppliedPolicy[]; live?: { running: number; queued: number; pendingApprovals: number }; phase?: AgentFrame; replicas?: number; scaling?: "up" | "down"; reduced: boolean; exposed?: Exposure; security?: Posture;
   labels: boolean; dim: boolean; selected: boolean; hot: boolean; onKey: () => void;
 }) {
   const adapter = ADAPTER_BY_ID[a.framework];
@@ -456,6 +466,7 @@ function AgentNode({ a, p, lod, k, u, health, policies, live, phase, replicas, s
       {showAll && a.state === "suspended" && dec(-D, D, <Pause x={-6} y={-6} size={12} strokeWidth={2.4} color={soft} />)}
       {showAll && a.state === "active" && health === "failing" && dec(-D, D, <AlertTriangle x={-6.5} y={-6.5} size={13} strokeWidth={2.2} color={STATE_COLORS.failed} />, STATE_COLORS.failed)}
       {showAll && a.state === "active" && health !== "failing" && (waiting > 0 || ph === "waiting") && dec(-D, D, <><Hourglass x={-6} y={-6} size={12} strokeWidth={2.2} color="#B45309" /></>, STATE_COLORS.waiting)}
+      {showAll && security?.configured && <g transform={`translate(0 ${-(R + RING + 2)})`} pointerEvents="none" data-security={security.grade}><title>{`Network security: ${security.label}, grade ${security.grade}`}</title><circle r={11} fill={surface} stroke={postureColor(security)} strokeWidth={2} />{security.grade === "D" || security.grade === "E" ? <ShieldAlert x={-6.5} y={-6.5} size={13} strokeWidth={2.2} color={postureColor(security)} /> : <ShieldCheck x={-6.5} y={-6.5} size={13} strokeWidth={2.2} color={postureColor(security)} />}</g>}
       {showAll && dec(D, D, a.origin === "forge" ? <Hammer x={-6} y={-6} size={12} strokeWidth={2.2} color={soft} /> : <Plug x={-6} y={-6} size={12} strokeWidth={2.2} color={soft} />)}
 
       {phase?.doing && lod >= 1 && tone && (

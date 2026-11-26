@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { authApi, type AuthUser, type Session } from "./client";
 import { registerAuthBridge } from "@/lib/api/client";
+import { clearRecent } from "@/lib/recent";
 
 /**
  * anonymous: nobody is signed in. session: a person is signed in. demo: the sample workspace, which uses local sample data and never calls the
@@ -82,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try { sessionStorage.removeItem(DEMO_KEY); } catch { /* storage unavailable */ }
+    clearRecent();
     try { await authApi.logout(); } catch { /* the cookie is cleared server side when reachable; local state is cleared either way */ }
     token.current = null;
     if (timer.current) clearTimeout(timer.current);

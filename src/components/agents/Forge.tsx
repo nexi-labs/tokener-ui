@@ -19,6 +19,8 @@ import { HOSTED_MODELS, checkModel, registryChoices } from "@/lib/agents/models"
 import { useMlops } from "@/lib/mlops/store";
 import { DEFAULT_SPEC, generateProject, validateSpec, type ForgeSpec } from "@/lib/agents/codegen";
 import { agents as actions, useAgents } from "@/lib/agents/store";
+import { NetworkSetup } from "@/components/agents/NetworkSetup";
+import type { NetworkConfig } from "@/lib/agents/network";
 import { zip } from "@/lib/agents/zip";
 import { toast } from "@/lib/mlops/toast";
 
@@ -49,6 +51,7 @@ export function Forge({ editId }: { editId?: string }) {
   const [file, setFile] = useState("");
   const [blocked, setBlocked] = useState(""); const [knowledge, setKnowledge] = useState(""); const [server, setServer] = useState({ name: "", tools: "" });
   const [touched, setTouched] = useState(false);
+  const [network, setNetwork] = useState<NetworkConfig | undefined>(undefined);
   const set = <K extends keyof ForgeSpec>(k: K, v: ForgeSpec[K]) => setSpec((s) => ({ ...s, [k]: v }));
   const modelIssues = useMemo(() => checkModel(spec.model, mlops?.models ?? [], mlops?.deployments ?? []), [spec.model, mlops]);
   const issues = useMemo(() => [...validateSpec(spec), ...modelIssues.filter((i) => i.level === "error").map((i) => ({ field: "model", message: i.message }))], [spec, modelIssues]);
@@ -61,7 +64,7 @@ export function Forge({ editId }: { editId?: string }) {
   const create = () => {
     setTouched(true);
     if (issues.length) { toast(issues[0].message, "error"); return; }
-    const r = editing ? actions.updateFromForge(editing.id, spec) : actions.createFromForge(spec);
+    const r = editing ? actions.updateFromForge(editing.id, spec) : actions.createFromForge(spec, network);
     if (!r.ok) { toast(r.error, "error"); return; }
     toast(editing ? `${r.value.title} saved as version ${spec.version}` : `${r.value.title} is created`, "success");
     router.push(`/agents/registry/${r.value.id}`);
@@ -198,6 +201,14 @@ export function Forge({ editId }: { editId?: string }) {
               <Field label="Conformance" hint="Observe sends traces. Govern adds policy and suspend. Collaborate adds calling other agents."><Select value={spec.conformance} onChange={(e) => set("conformance", e.target.value as ForgeSpec["conformance"])}><option value="observe">Observe</option><option value="govern">Govern</option><option value="collaborate">Collaborate</option></Select></Field>
               <div className="pt-6"><Toggle checked={spec.signing} onChange={(v) => set("signing", v)} label="Sign messages" description="Ed25519 signatures on what it sends." /></div>
             </div>
+          </CardBody>
+        </Card>
+
+        <Card>
+          {step(8, "Network and security", editing ? "Change how this agent is reached and what it may reach in its Network tab." : "Decide who can reach the agent and where it may call. The same layers a firewall and an edge give a public service: identity, limits, a shield, and a list of what may leave.")}
+          <CardBody>
+            {editing ? <p className="text-sm text-text-secondary">Network settings are saved separately from the version, so a change takes effect at once and is recorded in the agent&apos;s history. <a className="underline" href={`/agents/registry/${editing.id}?tab=network`}>Open the Network tab</a>.</p>
+              : <NetworkSetup subject={{ name: spec.name, control: "governed", models: [spec.model], tools: spec.tools }} value={network} onChange={setNetwork} />}
           </CardBody>
         </Card>
       </div>

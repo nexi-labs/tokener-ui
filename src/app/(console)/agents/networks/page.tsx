@@ -13,6 +13,7 @@ import { Confirm, Kpi, Modal, Notice } from "@/components/mlops/ui";
 import { OwnerSelect } from "@/components/org/OrgSelect";
 import { AgentChip, useAgentColors } from "@/components/agents/bits";
 import { PostureBadge, REACH_ICON } from "@/components/agents/NetworkBits";
+import { NetworkCanvas } from "@/components/agents/NetworkCanvas";
 import { agentNetworks, useAgents } from "@/lib/agents/store";
 import { PATH_LABEL, assess, membersOf, memberCounts, pathOf, type AgentNetwork, type PathState } from "@/lib/agents/network";
 import { PROTOCOL_BY_ID } from "@/lib/agents/topology";
@@ -27,6 +28,8 @@ export default function AgentNetworksPage() {
   const [peering, setPeering] = useState<AgentNetwork | null>(null);
   const [removing, setRemoving] = useState<AgentNetwork | null>(null);
   const [pathFilter, setPathFilter] = useState<"all" | PathState>("all");
+  const [canvasId, setCanvasId] = useState<string>("");
+  const canvasNet = networks.find((n) => n.id === canvasId) ?? networks[0] ?? null;
 
   const live = agents.filter((a) => a.state !== "retired");
   const cfgs = useMemo(() => Object.fromEntries(agents.map((a) => [a.id, a.network])), [agents]);
@@ -79,6 +82,16 @@ export default function AgentNetworksPage() {
         })}
         {networks.length === 0 && <Card className="lg:col-span-2"><CardBody><p className="text-sm text-text-secondary">No networks yet. Make one, then put agents in it.</p></CardBody></Card>}
       </div>
+
+      {/* canvas */}
+      <Card>
+        <CardHeader title="Network canvas" subtitle="How callers reach a network, the agents inside it, and what each one may call out to." action={
+          <Select aria-label="Network to draw" className="!w-48 !h-8 text-xs" value={canvasNet?.id ?? "none"} onChange={(e) => setCanvasId(e.target.value)}>
+            {networks.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
+            <option value="none">Outside every network</option>
+          </Select>} />
+        <CardBody><NetworkCanvas network={canvasId === "none" ? null : canvasNet} onEdit={(n) => setEditing(n)} /></CardBody>
+      </Card>
 
       {/* paths */}
       <Card>

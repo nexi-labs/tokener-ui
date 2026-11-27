@@ -14,6 +14,7 @@ import { isOpen } from "@/lib/agents/approvals";
 import { healthOf } from "@/lib/agents/topology";
 import { assess, memberCounts } from "@/lib/agents/network";
 import { useMlops } from "@/lib/mlops/store";
+import { meshStats, objectives } from "@/lib/agents/mesh";
 
 /** The period's spend and its parts. Every breakdown below adds up to the same figure, so the page agrees with itself. */
 const SPEND = 11408; const BUDGET = 15000; const LAST = 10742;
@@ -55,7 +56,7 @@ function Tile({ title, href, icon: Icon, metrics, note }: { title: string; href:
 }
 
 export function Overview() {
-  const { agents, networks, approvals } = useAgents(); const mlops = useMlops();
+  const { agents, networks, approvals, meshes } = useAgents(); const mlops = useMlops();
   const live = useMemo(() => agents.filter((a) => a.state !== "retired"), [agents]);
   const ag = useMemo(() => {
     const counts = memberCounts(Object.fromEntries(agents.map((a) => [a.id, a.network])));
@@ -68,9 +69,11 @@ export function Overview() {
     };
   }, [agents, networks, approvals, live]);
 
+  const meshRisk = useMemo(() => meshes.filter((m) => m.status === "live").map((m) => ({ m, miss: objectives(m, meshStats(m, agents)).filter((o) => o.state === "missed") })).filter((x) => x.miss.length), [meshes, agents]);
   const attention: { tone: "down" | "degraded"; text: string; href: string; area: string }[] = [
     ...(ag.waiting ? [{ tone: "degraded" as const, text: `${ag.waiting} ${ag.waiting === 1 ? "run is" : "runs are"} waiting for a person to approve`, href: "/agents/approvals", area: "Agent OS" }] : []),
     ...(ag.weak.length ? [{ tone: "down" as const, text: `${ag.weak.length} ${ag.weak.length === 1 ? "agent is" : "agents are"} weakly protected: ${ag.weak.slice(0, 2).map((x) => x.a.title).join(", ")}`, href: "/agents/networks", area: "Agent networks" }] : []),
+    ...meshRisk.map((x) => ({ tone: "degraded" as const, text: `Mesh ${x.m.name} is missing its objective: ${x.miss[0].label.toLowerCase()} is ${x.miss[0].actual}, aim ${x.miss[0].target}`, href: `/agents/mesh/${x.m.id}`, area: "Agent Mesh" })),
     ...(ag.failing.length ? [{ tone: "down" as const, text: `${ag.failing.length} ${ag.failing.length === 1 ? "agent is" : "agents are"} failing: ${ag.failing.slice(0, 2).map((a) => a.title).join(", ")}`, href: "/agents/registry", area: "Agent OS" }] : []),
     { tone: "degraded", text: "Gemini is slow: p99 at 1.2 s, three times its usual", href: "/providers", area: "Providers" },
     { tone: "down", text: "project:recsys runs out of budget in about 9 days at this rate", href: "/budgets", area: "Budgets" },
@@ -123,7 +126,7 @@ export function Overview() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           <Tile title="Gateway" href="/usage" icon={Gauge} metrics={[{ label: "Requests", value: "1.98M", delta: "+8.1%", good: true }, { label: "p95 latency", value: "412 ms", delta: "-6%", good: true }, { label: "Cache hits", value: "31%", delta: "+4 pts", good: true }]} note="Spend per request is down 2.3% since the cache rule went live." />
           <Tile title="Agent OS" href="/agents" icon={Bot} metrics={[{ label: "Agents", value: `${live.length}`, }, { label: "Runs today", value: int(ag.runsToday) }, { label: "Failed, 7 days", value: `${(ag.failRate * 100).toFixed(1)}%`, delta: ag.failRate > 0.03 ? "above 3%" : "within target", good: ag.failRate <= 0.03 }]}
-            note={<>{ag.governed} governed, {ag.secured} with a network setup{ag.waiting ? `, ${ag.waiting} waiting for approval` : ""}.</>} />
+            note={<>{ag.governed} governed, {ag.secured} with a network setup, {meshes.filter((m) => m.status === "live").length} live meshes{ag.waiting ? `, ${ag.waiting} waiting for approval` : ""}.</>} />
           <Tile title="Governance" href="/policy-studio" icon={ShieldCheck} metrics={[{ label: "Blocked by policy", value: "1,284", delta: "0.06% of calls", good: true }, { label: "PII masked", value: "3,902" }, { label: "Injections stopped", value: "211", delta: "+18%", good: false }]} note="Prompt injection attempts are up, and all of them were stopped." />
           <Tile title="Models and MLOps" href="/mlops" icon={BrainCircuit} metrics={[{ label: "Models", value: int(mlops?.models.length ?? 0) }, { label: "Deployments", value: int(mlops?.deployments.length ?? 0) }, { label: "Pipelines", value: int(mlops?.pipelines.length ?? 0) }]} note={<>{int(mlops?.runs.length ?? 0)} pipeline runs on record, {int(mlops?.knowledge.length ?? 0)} knowledge bases.</>} />
           <Tile title="Crucible" href="/crucible" icon={Anvil} metrics={[{ label: "Runs training", value: "3" }, { label: "Best eval score", value: "0.874", delta: "+0.021", good: true }, { label: "GPU hours", value: "412" }]} note="The latest fine-tune beat its baseline on all four evals." />

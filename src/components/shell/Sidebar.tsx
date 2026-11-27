@@ -31,7 +31,7 @@ export function Sidebar() {
   }, [pathname]);
   useEffect(() => { try { if (localStorage.getItem(RECENT_OPEN_KEY) === "0") setRecentOpen(false); } catch { /* storage unavailable */ } }, []);
   const toggleRecent = () => setRecentOpen((v) => { try { localStorage.setItem(RECENT_OPEN_KEY, v ? "0" : "1"); } catch { /* storage unavailable */ } return !v; });
-  const agentName = (path: string) => { const m = /^\/agents\/registry\/([^/]+)/.exec(path); return m ? agentsNow().agents.find((a) => a.id === m[1])?.title : undefined; };
+  const agentName = (path: string) => { const m = /^\/agents\/registry\/([^/]+)/.exec(path); if (m) return agentsNow().agents.find((a) => a.id === m[1])?.title; const k = /^\/agents\/mesh\/([^/]+)/.exec(path); return k ? agentsNow().meshes.find((x) => x.id === k[1])?.name : undefined; };
   const recents = visibleRecent(recent, pathname, agentName);
 
   // The group holding the active route opens itself; the rest stay closed.
@@ -67,13 +67,13 @@ export function Sidebar() {
           rail ? "lg:w-[68px]" : "lg:w-[256px]"
         )}
       >
-        <div className="relative flex items-center justify-center h-14 px-4 shrink-0">
-          <Link href="/dashboard" className="flex items-center justify-center">
+        <div className={clsx("flex items-center justify-between h-14 px-4 shrink-0", rail && "lg:justify-center lg:px-0")}>
+          <Link href="/dashboard" className="flex items-center">
             <Image
               src="/brand/logo-dark.svg"
               alt="tok∑ner"
-              width={88}
-              height={28}
+              width={104}
+              height={33}
               priority
               className={clsx(rail && "lg:hidden")}
             />
@@ -84,7 +84,7 @@ export function Sidebar() {
           <button
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden absolute right-3 top-2.5 h-9 w-9 flex items-center justify-center rounded-md text-text-tertiary hover:text-text-inverse hover:bg-white/10"
+            className="lg:hidden h-9 w-9 flex items-center justify-center rounded-md text-text-tertiary hover:text-text-inverse hover:bg-white/10"
           >
             <X size={18} />
           </button>

@@ -2,20 +2,22 @@
 
 import clsx from "clsx";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Cloud, ShieldCheck } from "lucide-react";
+import { ChevronDown, ChevronUp, Cloud, ShieldCheck, Waypoints } from "lucide-react";
 import { BUCKETS, type Bucket } from "@/lib/agents/network";
 import { HEALTH_COLOR, HEALTH_LABEL, POLICY_KINDS, PROTOCOLS, STATE_COLORS, type Health, type PolicyKind, type Protocol } from "@/lib/agents/topology";
 
-export type Highlight = { type: "protocol"; id: Protocol } | { type: "policy"; id: PolicyKind } | { type: "health"; id: Health } | { type: "exposure"; id: "exposure" } | { type: "security"; id: Bucket } | null;
-export type Layers = { groups: boolean; exposure: boolean; labels: boolean; traffic: boolean; retired: boolean; connectors: boolean; security: boolean };
+export type Highlight = { type: "protocol"; id: Protocol } | { type: "policy"; id: PolicyKind } | { type: "health"; id: Health } | { type: "exposure"; id: "exposure" } | { type: "security"; id: Bucket } | { type: "network"; id: string } | { type: "mesh"; id: string } | null;
+export type Layers = { groups: boolean; exposure: boolean; labels: boolean; traffic: boolean; retired: boolean; connectors: boolean; security: boolean; zones: boolean; meshBadges: boolean; meshEdges: boolean };
 type Counts = { protocols: Record<Protocol, number>; policies: Record<PolicyKind, number>; health: Partial<Record<Health, number>>; exposed: number; security: Record<Bucket, number> };
 
 const HEALTH_ORDER: Health[] = ["healthy", "degraded", "failing", "suspended", "unmeasured"];
 
 /** The key to the canvas, and its filters: clicking a protocol or a policy shows or hides it, and pointing at one lights up where it appears. */
-export function Legend({ off, setOff, layers, setLayers, counts, highlight, setHighlight }: {
+export type NetRow = { id: string; name: string; color: string; kind: string; count: number; peers: number };
+export type MeshRow = { id: string; name: string; color: string; status: string; count: number; pattern: string };
+export function Legend({ off, setOff, layers, setLayers, counts, highlight, setHighlight, nets, meshes }: {
   off: { protocols: Protocol[]; policies: PolicyKind[] }; setOff: (o: { protocols: Protocol[]; policies: PolicyKind[] }) => void;
-  layers: Layers; setLayers: (l: Layers) => void; counts: Counts; highlight: Highlight; setHighlight: (h: Highlight) => void;
+  layers: Layers; setLayers: (l: Layers) => void; counts: Counts; highlight: Highlight; setHighlight: (h: Highlight) => void; nets: NetRow[]; meshes: MeshRow[];
 }) {
   const [open, setOpen] = useState(true);
   const toggle = <T extends string>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -54,6 +56,26 @@ export function Legend({ off, setOff, layers, setLayers, counts, highlight, setH
           ))}
           <p className="px-2 pt-1 text-[11px] leading-snug text-text-tertiary">A shield on an agent means it has a network setup. Its colour is the grade. Point at a line to light up those agents.</p>
 
+          <div className={head}><span>Agent networks</span></div>
+          {nets.map((n) => (
+            <button key={n.id} type="button" title={`${n.kind === "private" ? "Private" : "Shared"} network. Peered with ${n.peers}.`} className={clsx(row, !layers.zones && "opacity-45")} {...hot({ type: "network", id: n.id })}>
+              <span className="w-[26px] grid place-items-center"><span className="h-3 w-3 rounded-full" style={{ background: n.color }} /></span>
+              <span className="flex-1 truncate">{n.name}</span><span className="text-xs text-text-tertiary tabular-nums">{n.count}</span>
+            </button>
+          ))}
+          {nets.length === 0 && <p className="px-2 text-[11px] text-text-tertiary">No networks yet.</p>}
+          <p className="px-2 pt-1 text-[11px] leading-snug text-text-tertiary">A tinted zone is a network. A dashed line between zones is a peering, which lets them call each other. The dot on an agent is its network.</p>
+
+          <div className={head}><span>Agent meshes</span></div>
+          {meshes.map((m) => (
+            <button key={m.id} type="button" title={`${m.pattern}. ${m.status}.`} className={clsx(row, !layers.meshBadges && "opacity-45")} {...hot({ type: "mesh", id: m.id })}>
+              <span className="w-[26px] grid place-items-center"><Waypoints size={16} color={m.color} strokeWidth={2.4} /></span>
+              <span className="flex-1 truncate">{m.name}</span>{m.status !== "live" && <span className="text-[10px] text-text-tertiary">{m.status}</span>}<span className="text-xs text-text-tertiary tabular-nums">{m.count}</span>
+            </button>
+          ))}
+          {meshes.length === 0 && <p className="px-2 text-[11px] text-text-tertiary">No meshes yet.</p>}
+          <p className="px-2 pt-1 text-[11px] leading-snug text-text-tertiary">Point at a mesh to see who hands a case to whom. The badge on an agent means it belongs to a mesh.</p>
+
           <div className={head}><span>Policies around an agent</span>
             <button className="normal-case tracking-normal font-normal text-text-secondary hover:text-text-primary" onClick={() => setOff({ ...off, policies: off.policies.length ? [] : POLICY_KINDS.map((p) => p.id) })}>{off.policies.length ? "Show all" : "Hide all"}</button></div>
           {POLICY_KINDS.map((p) => {
@@ -84,7 +106,7 @@ export function Legend({ off, setOff, layers, setLayers, counts, highlight, setH
           <p className="px-2 pt-1 text-[11px] leading-snug text-text-tertiary">Lines carry moving dashes while work is handed on. A connection, channel or knowledge base lights up when an agent calls it.</p>
 
           <div className={head}><span>Show</span></div>
-          {([["groups", "Department boxes"], ["connectors", "Connections, channels, knowledge"], ["security", "Security shields"], ["labels", "Names"], ["traffic", "Moving traffic"], ["retired", "Retired agents"]] as const).map(([k, label]) => (
+          {([["groups", "Department boxes"], ["connectors", "Connections, channels, knowledge"], ["security", "Security shields"], ["zones", "Network zones"], ["meshBadges", "Mesh badges"], ["meshEdges", "All mesh handoffs"], ["labels", "Names"], ["traffic", "Moving traffic"], ["retired", "Retired agents"]] as const).map(([k, label]) => (
             <label key={k} className={clsx(row, "cursor-pointer")}><input type="checkbox" checked={layers[k]} onChange={() => setLayers({ ...layers, [k]: !layers[k] })} className="accent-[#07191E]" /><span>{label}</span></label>
           ))}
         </div>

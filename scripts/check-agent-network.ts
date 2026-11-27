@@ -96,7 +96,7 @@ ok(testIngress(lim, call({ ip: "203.0.113.7" }), nets).verdict === "allow", "ins
 const fin = cfgs.agt_02;
 ok(testIngress(fin, call({ auth: "mtls", callerNetwork: "net_fin" }), nets).verdict === "allow", "a member of the network gets in");
 ok(testIngress(fin, call({ auth: "mtls", callerNetwork: "net_sup" }), nets).verdict === "allow", "a peered network gets in");
-eq(testIngress(fin, call({ auth: "mtls", callerNetwork: "net_clm" }), nets).by, "Private network", "a stranger network does not");
+eq(testIngress(fin, call({ auth: "mtls", callerNetwork: "net_other" }), nets).by, "Private network", "a stranger network does not");
 eq(testIngress(fin, call({ auth: "mtls" }), nets).by, "Private network", "no network does not");
 eq(testIngress(fin, call({ auth: "jwt", callerNetwork: "net_fin" }), nets).by, "Identity", "a private agent that wants certificates refuses a token");
 
@@ -137,12 +137,12 @@ ok(sampleSecurity(A("agt_03"), undefined).blocked === 0, "no setup, nothing bloc
 resetAgents();
 const st = () => agentsNow();
 ok(st().agents.filter((a) => a.network).length === Object.keys(cfgs).length && st().networks.length === 3, "the sample workspace starts with networks and setups");
-ok(!actions.setNetwork("agt_03", { ...presetConfig("private", A("agt_03")), network: undefined }).ok, "the store refuses a private setup with no network");
-const before = st().agents.find((a) => a.id === "agt_03")!.versions.length;
-ok(actions.setNetwork("agt_03", presetConfig("public", A("agt_03"))).ok && st().agents.find((a) => a.id === "agt_03")!.network?.reach === "public", "the store saves a setup");
-ok(st().agents.find((a) => a.id === "agt_03")!.versions.length === before + 1 && /Network set up/.test(st().agents.find((a) => a.id === "agt_03")!.versions[0].note), "...and records it in the history");
-ok(actions.clearNetwork("agt_03").ok && !st().agents.find((a) => a.id === "agt_03")!.network, "a setup can be removed");
-ok(!actions.setNetwork("nope", presetConfig("public", A("agt_03"))).ok, "an unknown agent");
+ok(!actions.setNetwork("agt_06", { ...presetConfig("private", A("agt_06")), network: undefined }).ok, "the store refuses a private setup with no network");
+const before = st().agents.find((a) => a.id === "agt_06")!.versions.length;
+ok(actions.setNetwork("agt_06", presetConfig("public", A("agt_06"))).ok && st().agents.find((a) => a.id === "agt_06")!.network?.reach === "public", "the store saves a setup");
+ok(st().agents.find((a) => a.id === "agt_06")!.versions.length === before + 1 && /Network set up/.test(st().agents.find((a) => a.id === "agt_06")!.versions[0].note), "...and records it in the history");
+ok(actions.clearNetwork("agt_06").ok && !st().agents.find((a) => a.id === "agt_06")!.network, "a setup can be removed");
+ok(!actions.setNetwork("nope", presetConfig("public", A("agt_06"))).ok, "an unknown agent");
 // create with a setup
 const spec = { ...JSON.parse(JSON.stringify(DEFAULT_SPEC)), name: "net-agent", title: "Net agent", owner: "Platform", department: "Engineering" };
 const made = actions.createFromForge(spec, presetConfig("public", { ...A("agt_03"), name: "net-agent" }));

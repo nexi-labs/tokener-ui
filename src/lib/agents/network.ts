@@ -400,9 +400,9 @@ export const reachLabel = (r: Reach | null | undefined) => (r ? REACH.find((x) =
 export function sampleNetworks(): AgentNetwork[] {
   const at = new Date(Date.now() - 40 * 86_400_000).toISOString();
   return [
-    { id: "net_fin", name: "Finance core", description: "Agents that decide, match and pay. Closed to everything else.", kind: "private", identity: "mtls", peers: ["net_sup"], owner: "Finance platform", createdAt: at },
+    { id: "net_fin", name: "Finance core", description: "Agents that decide, match and pay. Closed to everything else.", kind: "private", identity: "mtls", peers: ["net_sup", "net_clm"], owner: "Finance platform", createdAt: at },
     { id: "net_sup", name: "Support edge", description: "Customer facing agents, allowed to hand a refund to Finance core.", kind: "shared", identity: "jwt", peers: ["net_fin"], owner: "Support engineering", createdAt: at },
-    { id: "net_clm", name: "Claims", description: "Claims intake and document processing, including the cloud agent that sends packs in.", kind: "private", identity: "mtls", peers: [], owner: "Operations", createdAt: at },
+    { id: "net_clm", name: "Claims", description: "Claims intake, document processing and the policy wording check, including the cloud agent that sends packs in. Peered with Finance core so a payout can be prepared.", kind: "private", identity: "mtls", peers: ["net_fin"], owner: "Operations", createdAt: at },
   ];
 }
 export function sampleNetworkConfigs(agents: Pick<Agent, "id" | "name" | "tools" | "models" | "control">[]): Record<string, NetworkConfig> {
@@ -413,6 +413,7 @@ export function sampleNetworkConfigs(agents: Pick<Agent, "id" | "name" | "tools"
   put("agt_02", presetConfig("private", A("agt_02"), "security@nexi.com", "net_fin"));
   put("agt_05", presetConfig("private", A("agt_05"), "security@nexi.com", "net_fin"));
   put("agt_07", { ...presetConfig("internal", A("agt_07")), network: "net_sup" });
+  put("agt_03", presetConfig("private", A("agt_03"), "security@nexi.com", "net_clm"));
   put("agt_09", presetConfig("private", A("agt_09"), "security@nexi.com", "net_clm"));
   put("agt_15", presetConfig("private", A("agt_15"), "security@nexi.com", "net_clm"));
   const eight = presetConfig("public", A("agt_08")); put("agt_08", { ...eight, ingress: { ...eight.ingress, originLock: false, shield: { injection: "log", pii: "log", bots: false }, tls: { ...eight.ingress.tls, min: "1.2" } }, egress: { ...eight.egress, mode: "allow-all", rules: [], dlp: "off" } });

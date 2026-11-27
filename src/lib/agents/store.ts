@@ -15,6 +15,7 @@ import { getSimNow } from "./loadsim";
 import type { SwitchEvent } from "./autoswitch";
 import { planSwitch, rollbackNote, switchNote, type Plan, type Strategy } from "./switching";
 import { assess, memberCounts, membersOf, presetConfig, sampleNetworkConfigs, sampleNetworks, validateNetwork, type AgentNetwork, type NetworkConfig } from "./network";
+import { blockers as meshBlockers, sampleMeshes, validateMesh, type Mesh, type MeshStatus } from "./mesh";
 import type { Exposure, Link, Live, Policy } from "./topology";
 import type { Agent, AgentState, ControlLevel, Trace, Workflow, WorkflowPattern } from "./types";
 import type { ForgeSpec } from "./codegen";
@@ -24,7 +25,7 @@ import { validateSpec } from "./codegen";
  * In memory store behind the Agent OS screens in the sample workspace. It lives only in this browser tab and starts again from the sample on reload.
  * A signed-in workspace does not use it: those screens say they are not connected until the agent registry API exists (docs/47, section 7).
  */
-export type AgentsState = { agents: Agent[]; traces: Trace[]; workflows: Workflow[]; links: Link[]; exposures: Exposure[]; policies: Policy[]; live: Record<string, Live>; evalSuites: EvalSuite[]; evalRuns: EvalRun[]; memoryItems: Record<string, MemoryItem[]>; approvals: Approval[]; spaces: Space[]; networks: AgentNetwork[] };
+export type AgentsState = { agents: Agent[]; traces: Trace[]; workflows: Workflow[]; links: Link[]; exposures: Exposure[]; policies: Policy[]; live: Record<string, Live>; evalSuites: EvalSuite[]; evalRuns: EvalRun[]; memoryItems: Record<string, MemoryItem[]>; approvals: Approval[]; spaces: Space[]; networks: AgentNetwork[]; meshes: Mesh[] };
 export type Result<T = void> = { ok: true; value: T } | { ok: false; error: string };
 
 let state: AgentsState | null = null;
@@ -35,7 +36,7 @@ const init = (): AgentsState => {
   const { agents } = sampleAgents(); const topo = sampleTopology(); const ev = sampleEvals(agents);
   const traces = [...sampleTraces(agents, topo.links, Date.now(), sampleHub()), ...ev.traces].sort((x, y) => Date.parse(y.startedAt) - Date.parse(x.startedAt));
   const nets = sampleNetworks(); const cfgs = sampleNetworkConfigs(agents);
-  return { agents: agents.map((a) => (cfgs[a.id] ? { ...a, network: cfgs[a.id] } : a)), networks: nets, traces, workflows: sampleWorkflows(), ...topo, evalSuites: ev.suites, evalRuns: ev.runs, memoryItems: sampleMemoryItems(), approvals: sampleApprovals(), spaces: sampleSpaces() };
+  return { agents: agents.map((a) => (cfgs[a.id] ? { ...a, network: cfgs[a.id] } : a)), networks: nets, traces, workflows: sampleWorkflows(), ...topo, evalSuites: ev.suites, evalRuns: ev.runs, memoryItems: sampleMemoryItems(), approvals: sampleApprovals(), spaces: sampleSpaces(), meshes: sampleMeshes() };
 };
 const get = (): AgentsState => (state ??= init());
 function set(patch: Partial<AgentsState>) { state = { ...get(), ...patch }; listeners.forEach((l) => l()); }
@@ -465,3 +466,36 @@ export const agentNetworks = {
   },
 };
 const presetFor = (a: Agent) => presetConfig("internal", a);
+
+// Agent Mesh: groups of agents that work one use case together. A mesh goes live only when nothing in it is an error.
+export const meshes = {
+  create(input: Omit<Mesh, "id" | "createdAt" | "status">): Result<Mesh> {
+    const m: Mesh = { ...input, id: nid("msh"), status: "draft", createdAt: new Date().toISOString() };
+    const bad = validateMesh(m, get().agents, get().networks, get().meshes).find((i) => i.level === "error" && (i.path === "name" || i.path === "useCase" || i.path === "owner" || i.path === "members"));
+    if (bad) return { ok: false, error: bad.message };
+    set({ meshes: [...get().meshes, m] });
+    return { ok: true, value: m };
+  },
+  /** A change to a live mesh that leaves an error in it is refused, so a live mesh never goes bad under people. A draft can be saved half done. */
+  update(id: string, patch: Partial<Omit<Mesh, "id" | "createdAt" | "status">>): Result<Mesh> {
+    const cur = get().meshes.find((m) => m.id === id); if (!cur) return { ok: false, error: "That mesh does not exist." };
+    const next: Mesh = { ...cur, ...patch };
+    const issues = validateMesh(next, get().agents, get().networks, get().meshes);
+    const bad = cur.status === "live" ? meshBlockers(issues)[0] : issues.find((i) => i.level === "error" && (i.path === "name" || i.path === "useCase" || i.path === "owner"));
+    if (bad) return { ok: false, error: bad.message };
+    set({ meshes: get().meshes.map((m) => (m.id === id ? next : m)) });
+    return { ok: true, value: next };
+  },
+  setStatus(id: string, status: MeshStatus): Result<Mesh> {
+    const cur = get().meshes.find((m) => m.id === id); if (!cur) return { ok: false, error: "That mesh does not exist." };
+    if (status === "live") { const bad = meshBlockers(validateMesh(cur, get().agents, get().networks, get().meshes))[0]; if (bad) return { ok: false, error: bad.message }; }
+    const next = { ...cur, status }; set({ meshes: get().meshes.map((m) => (m.id === id ? next : m)) });
+    return { ok: true, value: next };
+  },
+  remove(id: string): Result {
+    const cur = get().meshes.find((m) => m.id === id); if (!cur) return { ok: false, error: "That mesh does not exist." };
+    if (cur.status === "live") return { ok: false, error: "Pause the mesh before you delete it. Cases may be on their way through it." };
+    set({ meshes: get().meshes.filter((m) => m.id !== id) });
+    return { ok: true, value: undefined };
+  },
+};

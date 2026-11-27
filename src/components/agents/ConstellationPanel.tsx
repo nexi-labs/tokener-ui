@@ -3,7 +3,8 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Cloud, Minus, Pause, Play, Plus, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, Cloud, Minus, Pause, Play, Plus, ShieldCheck, Waypoints, X } from "lucide-react";
+import { ROLE_LABEL as MESH_ROLE } from "@/lib/agents/mesh";
 import { PostureBadge } from "@/components/agents/NetworkBits";
 import { REACH, assess, memberCounts } from "@/lib/agents/network";
 import { Badge } from "@/components/ui/Badge";
@@ -140,6 +141,12 @@ function Body({ sel, tab, setTab, onClose, onSelect, replicas }: { sel: Selectio
           {a.network ? <div className="text-xs text-text-secondary">{REACH.find((r) => r.id === a.network!.reach)!.label}{a.network.network ? `, in ${networks.find((n) => n.id === a.network!.network)?.name ?? "a network"}` : ""}. Outbound: {a.network.egress.mode === "allow-all" ? "anywhere" : a.network.egress.mode === "deny-all" ? "nothing" : `${a.network.egress.rules.length} allowed`}. {posture.findings.find((f) => f.severity !== "good") ? <>Next fix: {posture.findings.find((f) => f.severity !== "good")!.title.toLowerCase()}.</> : "Nothing to fix."}</div>
             : <div className="text-xs text-text-secondary">No network setup. Any caller in the organisation can reach it, and nothing limits where it can call.</div>}
           <Link href={`/agents/registry/${a.id}?tab=network`} className="inline-flex items-center gap-1 text-xs underline text-text-secondary hover:text-text-primary">{a.network ? "Open the Network tab" : "Set it up"} <ArrowRight size={11} /></Link>
+        </div>
+        <div className="rounded-md border border-border p-3 space-y-1.5" data-testid="panel-mesh">
+          <div className="flex items-center gap-2 text-sm font-medium"><Waypoints size={15} /> Agent mesh</div>
+          {store.meshes.filter((m) => m.members.some((x) => x.agentId === a.id)).map((m) => { const me = m.members.find((x) => x.agentId === a.id)!; const outs = m.handoffs.filter((h) => h.from === a.id).length; const ins = m.handoffs.filter((h) => h.to === a.id).length;
+            return <Link key={m.id} href={`/agents/mesh/${m.id}`} className="block text-xs text-text-secondary hover:text-text-primary"><span className="font-medium text-text-primary">{m.name}</span> <span className="text-text-tertiary">{m.status}</span>. {MESH_ROLE[me.role]}. Takes work from {ins}, hands on to {outs}.</Link>; })}
+          {!store.meshes.some((m) => m.members.some((x) => x.agentId === a.id)) && <div className="text-xs text-text-secondary">Not part of a mesh. A mesh gives it a role in a use case, with rules for who hands it work.</div>}
         </div>
         {exp && <div className="rounded-md border border-border p-3 space-y-1.5"><div className="flex items-center gap-2 text-sm font-medium"><Cloud size={15} /> Reachable from outside</div>
           <div className="text-xs text-text-secondary">{{ gateway: "Through the tok∑ner gateway", "public-url": "On a public address", webhook: "Through a webhook" }[exp.via]}. {exp.auth === "none" ? <span className="text-status-down font-medium">There is no authentication.</span> : `Callers use ${exp.auth === "jwt" ? "a signed token" : "an application key"}.`} {compact(exp.requests24h)} requests in 24 hours.</div><code className="block text-[11px] text-text-tertiary break-all">{exp.url}</code></div>}

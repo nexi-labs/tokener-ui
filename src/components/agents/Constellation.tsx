@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import NextLink from "next/link";
-import { Activity, AlertTriangle, ChevronDown, ChevronUp, Cloud, ClipboardList, Eye, Hammer, Hourglass, Layers as Stack, Maximize, Maximize2, Minimize2, Moon, Network, Pause, Plug, RotateCcw, Search, ShieldAlert, ShieldCheck, Sun, X, ZoomIn, ZoomOut } from "lucide-react";
+import { Activity, AlertTriangle, ChevronDown, ChevronUp, Cloud, ClipboardList, Eye, Hammer, Hourglass, Layers as Stack, Maximize, Maximize2, Minimize2, Moon, Network, Pause, Plug, RotateCcw, Search, ShieldAlert, ShieldCheck, Sun, Waypoints, X, ZoomIn, ZoomOut } from "lucide-react";
 import { NodeIcon } from "@/components/studio/icons";
 import { ADAPTER_BY_ID } from "@/lib/agents/adapters";
 import { liveOf, totals, useAgents } from "@/lib/agents/store";
@@ -16,7 +16,9 @@ import {
   HEALTH_COLOR, HEALTH_LABEL, ORBIT, POLICY_BY_ID, PROTOCOL_BY_ID, PROTOCOLS, R, RING, STATE_COLORS, arc, groupBoxes, healthOf, layout, linkPath, policiesFor, ringSegments,
   type AppliedPolicy, type Exposure, type Health, type Link, type PolicyKind, type Protocol, type Pt,
 } from "@/lib/agents/topology";
-import { Legend, type Highlight, type Layers } from "./ConstellationLegend";
+import { Legend, type Highlight, type Layers, type MeshRow, type NetRow } from "./ConstellationLegend";
+import { MESH_COLORS, NET_COLORS, centroid, colorAt, handoffPath, zoneParts } from "@/lib/agents/showcase";
+import { describeWhen } from "@/lib/agents/mesh";
 import { assess, bucketOf, memberCounts, type Bucket, type Posture } from "@/lib/agents/network";
 import { postureColor } from "./NetworkBits";
 import { ConstellationPanel, type Selection } from "./ConstellationPanel";
@@ -42,7 +44,7 @@ const border = "rgb(var(--c-border-strong))";
 
 export function Constellation({ initialSelect, trace, onSwitchView, full, onToggleFull }: { initialSelect?: string; trace?: string; onSwitchView?: () => void; full?: boolean; onToggleFull?: () => void }) {
   const store = useAgents();
-  const { agents, links, exposures, policies, traces, networks } = store;
+  const { agents, links, exposures, policies, traces, networks, meshes } = store;
   const live = useMemo(() => liveOf(store), [store]);
   const hub = useHub();
   const wrap = useRef<HTMLDivElement>(null);
@@ -54,7 +56,7 @@ export function Constellation({ initialSelect, trace, onSwitchView, full, onTogg
   const [hover, setHover] = useState<Hover>(null);
   const [highlight, setHighlight] = useState<Highlight>(null);
   const [off, setOff] = useState<{ protocols: Protocol[]; policies: PolicyKind[] }>({ protocols: [], policies: [] });
-  const [layers, setLayers] = useState<Layers>({ groups: true, exposure: true, labels: true, traffic: true, retired: false, connectors: true, security: true });
+  const [layers, setLayers] = useState<Layers>({ groups: true, exposure: true, labels: true, traffic: true, retired: false, connectors: true, security: true, zones: true, meshBadges: true, meshEdges: false });
   const [liveOn, setLiveOn] = useState(true);
   const [filters, setFilters] = useState<{ control: "all" | ControlLevel; dept: string; q: string }>({ control: "all", dept: "all", q: "" });
   const [reduced, setReduced] = useState(false);
@@ -225,6 +227,12 @@ export function Constellation({ initialSelect, trace, onSwitchView, full, onTogg
   };
   const posture = useMemo(() => { const cfgs = Object.fromEntries(agents.map((x) => [x.id, x.network])); const counts = memberCounts(cfgs); return new Map(agents.map((x) => [x.id, assess(x, x.network, networks, counts)])); }, [agents, networks]);
   const hl = highlight;
+  const netColor = useMemo(() => new Map(networks.map((n, i) => [n.id, colorAt(NET_COLORS, i)])), [networks]);
+  const meshColor = useMemo(() => new Map(meshes.map((m, i) => [m.id, colorAt(MESH_COLORS, i)])), [meshes]);
+  const meshesOf = useMemo(() => { const m = new Map<string, { id: string; name: string; color: string }[]>(); for (const x of meshes) for (const mem of x.members) m.set(mem.agentId, [...(m.get(mem.agentId) ?? []), { id: x.id, name: x.name, color: meshColor.get(x.id)! }]); return m; }, [meshes, meshColor]);
+  const zones = useMemo(() => networks.map((n) => ({ n, color: netColor.get(n.id)!, pts: shown.filter((a) => a.network?.network === n.id).map((a) => pos[a.id]).filter(Boolean) })).filter((z) => z.pts.length > 0), [networks, shown, pos, netColor]);
+  const netRows: NetRow[] = useMemo(() => networks.map((n) => ({ id: n.id, name: n.name, color: netColor.get(n.id)!, kind: n.kind, peers: n.peers.length, count: shown.filter((a) => a.network?.network === n.id).length })), [networks, shown, netColor]);
+  const meshRows: MeshRow[] = useMemo(() => meshes.map((m) => ({ id: m.id, name: m.name, color: meshColor.get(m.id)!, status: m.status, pattern: m.pattern, count: m.members.filter((x) => shownIds.has(x.agentId)).length })), [meshes, meshColor, shownIds]);
   const agentDim = (a: Agent) => {
     if (match && !match.has(a.id)) return true;
     if (near && !near.has(a.id)) return true;
@@ -233,6 +241,8 @@ export function Constellation({ initialSelect, trace, onSwitchView, full, onTogg
     if (hl?.type === "health") return health.get(a.id) !== hl.id;
     if (hl?.type === "exposure") return !expOf.has(a.id);
     if (hl?.type === "security") return bucketOf(posture.get(a.id)!) !== hl.id;
+    if (hl?.type === "network") return a.network?.network !== hl.id;
+    if (hl?.type === "mesh") return !meshes.find((m) => m.id === hl.id)?.members.some((x) => x.agentId === a.id);
     return false;
   };
   const linkDim = (l: Link) => {
@@ -272,6 +282,7 @@ export function Constellation({ initialSelect, trace, onSwitchView, full, onTogg
             {PROTOCOLS.map((p) => (
               <marker key={p.id} id={`arrow-${p.id}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9 Z" fill={p.color} /></marker>
             ))}
+            {meshes.map((m) => <marker key={m.id} id={`mesh-arrow-${m.id}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9 Z" fill={meshColor.get(m.id)} /></marker>)}
             <marker id="arrow-res" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9 Z" fill="rgb(var(--c-text-tertiary))" /></marker>
             <marker id="arrow-res-on" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9 Z" fill={LIVE_COLOR} /></marker>
           </defs>
@@ -287,6 +298,26 @@ export function Constellation({ initialSelect, trace, onSwitchView, full, onTogg
                   {b.w > 330 && <text x={b.x + b.w - 28} y={b.y + 24 + 14 * u} fontSize={12 * u} textAnchor="end" fill={faint} pointerEvents="none">{b.members.length} {b.members.length === 1 ? "agent" : "agents"}</text>}
                 </g>
               );
+            })}
+
+            {/* network zones: a tinted area around the agents of each network, and a dashed line between networks that are peered */}
+            {layers.zones && zones.map((z) => {
+              const on = hl?.type === "network" && hl.id === z.n.id; const faded = hl && !on; const parts = zoneParts(z.pts); const pad = 54;
+              return (
+                <g key={z.n.id} data-kind="zone" data-id={z.n.id} pointerEvents="none" opacity={faded ? 0.25 : 1}>
+                  <g opacity={on ? 0.2 : 0.1} fill={z.color} stroke={z.color}>
+                    {z.pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={pad} stroke="none" />)}
+                    {parts.edges.map(([p, q], i) => <line key={i} x1={p.x} y1={p.y} x2={q.x} y2={q.y} strokeWidth={pad * 0.9} strokeLinecap="round" />)}
+                  </g>
+                  {parts.edges.map(([p, q], i) => <line key={"d" + i} x1={p.x} y1={p.y} x2={q.x} y2={q.y} stroke={z.color} strokeOpacity={on ? 0.9 : 0.55} strokeWidth={on ? 2.6 : 1.8} strokeDasharray="3 7" strokeLinecap="round" />)}
+                  {z.pts.map((p, i) => <circle key={"o" + i} cx={p.x} cy={p.y} r={pad} fill="none" stroke={z.color} strokeOpacity={on ? 0.8 : 0.45} strokeWidth={on ? 2.4 : 1.5} strokeDasharray="3 7" strokeLinecap="round" />)}
+                  <text x={parts.top.x} y={parts.top.y + pad + 14 * u} textAnchor="middle" fontSize={13 * u} fontWeight={600} fill={z.color}>{z.n.name}</text>
+                </g>
+              );
+            })}
+            {layers.zones && zones.flatMap((z) => z.n.peers.map((pid) => ({ a: z, b: zones.find((o) => o.n.id === pid) })).filter((x) => x.b && x.a.n.id < x.b.n.id)).map((x) => {
+              const a = centroid(x.a.pts), b = centroid(x.b!.pts); const dim = hl && !(hl.type === "network" && (hl.id === x.a.n.id || hl.id === x.b!.n.id));
+              return <g key={x.a.n.id + x.b!.n.id} pointerEvents="none" opacity={dim ? 0.15 : 0.9}><line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={dark ? "#9AA3AE" : "#64748B"} strokeWidth={2} strokeDasharray="10 6" /><rect x={(a.x + b.x) / 2 - 30 * u} y={(a.y + b.y) / 2 - 10 * u} width={60 * u} height={20 * u} rx={10 * u} fill={dark ? "#111B1F" : "#fff"} stroke={dark ? "#9AA3AE" : "#64748B"} strokeWidth={1} /><text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 + 4 * u} textAnchor="middle" fontSize={11 * u} fill={dark ? "#C9D1D9" : "#475569"}>peered</text></g>;
             })}
 
             {/* exposure: a dotted line from each exposed agent up to the cloud */}
@@ -357,10 +388,20 @@ export function Constellation({ initialSelect, trace, onSwitchView, full, onTogg
               );
             })}
 
+            {/* mesh handoffs: who hands a case to whom, for the mesh pointed at, or for every live mesh */}
+            {meshes.map((m) => {
+              const on = hl?.type === "mesh" && hl.id === m.id; if (!on && !(layers.meshEdges && m.status === "live" && !hl)) return null; const c = meshColor.get(m.id)!;
+              return <g key={m.id} data-kind="mesh-edges" data-id={m.id} pointerEvents="none">
+                {m.handoffs.map((h, i) => { const a = pos[h.from], b = pos[h.to]; if (!a || !b || !shownIds.has(h.from) || !shownIds.has(h.to)) return null; const back = m.handoffs.some((o) => o.from === h.to && o.to === h.from); const g = handoffPath(a, b, R + RING + 4, back ? 22 : 8 + (i % 2) * 6);
+                  return <g key={h.id}><path d={g.d} fill="none" stroke={c} strokeWidth={on ? 3.2 : 1.6} strokeOpacity={on ? 0.95 : 0.55} strokeDasharray={h.when === "always" ? undefined : "9 5"} markerEnd={`url(#mesh-arrow-${m.id})`} />
+                    {on && h.when !== "always" && <g transform={`translate(${g.mid.x} ${g.mid.y}) scale(${u})`}><rect x={-(describeWhen(h.when).length * 3.1 + 8)} y={-9} width={describeWhen(h.when).length * 6.2 + 16} height={18} rx={9} fill={dark ? "#111B1F" : "#fff"} stroke={c} /><text textAnchor="middle" y={4} fontSize={10.5} fill={dark ? "#E6EDF3" : "#334155"}>{describeWhen(h.when)}</text></g>}</g>; })}
+              </g>;
+            })}
+
             {/* agents */}
             {shown.map((a) => (
               <AgentNode key={a.id} a={a} p={pos[a.id]} lod={lod} k={view.k} u={u} health={health.get(a.id)!} policies={applied.get(a.id)!.filter((p) => !off.policies.includes(p.kind))}
-                live={live[a.id]} phase={flight.frame.agents[a.id]} replicas={liveOn ? flight.replicas[a.id] : undefined} scaling={liveOn && flight.scaling[a.id] ? ((flight.events.find((x) => x.agentId === a.id)?.to ?? 0) > (flight.events.find((x) => x.agentId === a.id)?.from ?? 0) ? "up" : "down") : undefined} reduced={reduced} exposed={layers.exposure ? expOf.get(a.id) : undefined} security={layers.security ? posture.get(a.id) : undefined} labels={layers.labels} dim={agentDim(a)} selected={sel?.kind === "agent" && sel.id === a.id} hot={hover?.kind === "agent" && hover.id === a.id}
+                live={live[a.id]} phase={flight.frame.agents[a.id]} replicas={liveOn ? flight.replicas[a.id] : undefined} scaling={liveOn && flight.scaling[a.id] ? ((flight.events.find((x) => x.agentId === a.id)?.to ?? 0) > (flight.events.find((x) => x.agentId === a.id)?.from ?? 0) ? "up" : "down") : undefined} reduced={reduced} exposed={layers.exposure ? expOf.get(a.id) : undefined} security={layers.security ? posture.get(a.id) : undefined} netColor={layers.zones && a.network?.network ? netColor.get(a.network.network) : undefined} netName={networks.find((n) => n.id === a.network?.network)?.name} meshBadges={layers.meshBadges ? meshesOf.get(a.id) : undefined} labels={layers.labels} dim={agentDim(a)} selected={sel?.kind === "agent" && sel.id === a.id} hot={hover?.kind === "agent" && hover.id === a.id}
                 onKey={() => { setSel({ kind: "agent", id: a.id }); reveal(a.id); }} />
             ))}
 
@@ -404,7 +445,7 @@ export function Constellation({ initialSelect, trace, onSwitchView, full, onTogg
       {liveOn && flight.events[0] && Date.now() - flight.events[0].at < 14_000 && (() => { const ev = flight.events[0]; return <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex max-w-[460px] items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-[13px] shadow-card" role="status">
         {ev.to > ev.from ? <ChevronUp size={15} style={{ color: "#067A4E" }} /> : <ChevronDown size={15} className="text-text-tertiary" />}<span className="truncate"><b className="font-semibold">{byTitle.get(ev.agentId)}</b> {ev.to > ev.from ? "scaled up" : "scaled down"}, {ev.from} to {ev.to}. {ev.reason}</span></div>; })()}
 
-      <Legend off={off} setOff={setOff} layers={layers} setLayers={setLayers} counts={counts} setHighlight={setHighlight} highlight={highlight} />
+      <Legend nets={netRows} meshes={meshRows} off={off} setOff={setOff} layers={layers} setLayers={setLayers} counts={counts} setHighlight={setHighlight} highlight={highlight} />
 
       {/* hover card */}
       {hover && !drag.current?.moved && <div ref={tip} className="pointer-events-none absolute z-20 w-72 rounded-lg border border-border bg-surface p-3 shadow-popover text-[13px]" style={{ left: pointer.current.x, top: pointer.current.y }}>
@@ -422,8 +463,8 @@ function Tool({ label, onClick, children, disabled }: { label: string; onClick: 
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-function AgentNode({ a, p, lod, k, u, health, policies, live, phase, replicas, scaling, reduced, exposed, security, labels, dim, selected, hot, onKey }: {
-  a: Agent; p: Pt; lod: number; k: number; u: number; health: Health; policies: AppliedPolicy[]; live?: { running: number; queued: number; pendingApprovals: number }; phase?: AgentFrame; replicas?: number; scaling?: "up" | "down"; reduced: boolean; exposed?: Exposure; security?: Posture;
+function AgentNode({ a, p, lod, k, u, health, policies, live, phase, replicas, scaling, reduced, exposed, security, netColor, netName, meshBadges, labels, dim, selected, hot, onKey }: {
+  a: Agent; p: Pt; lod: number; k: number; u: number; health: Health; policies: AppliedPolicy[]; live?: { running: number; queued: number; pendingApprovals: number }; phase?: AgentFrame; replicas?: number; scaling?: "up" | "down"; reduced: boolean; exposed?: Exposure; security?: Posture; netColor?: string; netName?: string; meshBadges?: { id: string; name: string; color: string }[];
   labels: boolean; dim: boolean; selected: boolean; hot: boolean; onKey: () => void;
 }) {
   const adapter = ADAPTER_BY_ID[a.framework];
@@ -467,6 +508,8 @@ function AgentNode({ a, p, lod, k, u, health, policies, live, phase, replicas, s
       {showAll && a.state === "active" && health === "failing" && dec(-D, D, <AlertTriangle x={-6.5} y={-6.5} size={13} strokeWidth={2.2} color={STATE_COLORS.failed} />, STATE_COLORS.failed)}
       {showAll && a.state === "active" && health !== "failing" && (waiting > 0 || ph === "waiting") && dec(-D, D, <><Hourglass x={-6} y={-6} size={12} strokeWidth={2.2} color="#B45309" /></>, STATE_COLORS.waiting)}
       {showAll && security?.configured && <g transform={`translate(0 ${-(R + RING + 2)})`} pointerEvents="none" data-security={security.grade}><title>{`Network security: ${security.label}, grade ${security.grade}`}</title><circle r={11} fill={surface} stroke={postureColor(security)} strokeWidth={2} />{security.grade === "D" || security.grade === "E" ? <ShieldAlert x={-6.5} y={-6.5} size={13} strokeWidth={2.2} color={postureColor(security)} /> : <ShieldCheck x={-6.5} y={-6.5} size={13} strokeWidth={2.2} color={postureColor(security)} />}</g>}
+      {showAll && netColor && <g transform={`translate(${R + RING + 3} 0)`} pointerEvents="none" data-network-dot><title>{`Network: ${netName}`}</title><circle r={7} fill={netColor} stroke={surface} strokeWidth={2} /></g>}
+      {showAll && meshBadges && meshBadges.length > 0 && <g transform={`translate(${-(R + RING + 3)} 0)`} pointerEvents="none" data-mesh-badge><title>{`Mesh: ${meshBadges.map((m) => m.name).join(", ")}`}</title><circle r={11} fill={surface} stroke={meshBadges[0].color} strokeWidth={2} /><Waypoints x={-6.5} y={-6.5} size={13} strokeWidth={2.2} color={meshBadges[0].color} />{meshBadges.length > 1 && <text x={11} y={-8} fontSize={10} fontWeight={700} fill={meshBadges[0].color}>{meshBadges.length}</text>}</g>}
       {showAll && dec(D, D, a.origin === "forge" ? <Hammer x={-6} y={-6} size={12} strokeWidth={2.2} color={soft} /> : <Plug x={-6} y={-6} size={12} strokeWidth={2.2} color={soft} />)}
 
       {phase?.doing && lod >= 1 && tone && (

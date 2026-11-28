@@ -99,7 +99,7 @@ export const agents = {
     return { ok: true, value: a };
   },
   /** Saves how the agent is reached and what it may reach. An error stops the save; a warning is shown and does not. */
-  setNetwork(id: string, cfg: NetworkConfig, by = "nestor@nexi.com"): Result<NetworkConfig> {
+  setNetwork(id: string, cfg: NetworkConfig, by = "jdoe@example.com"): Result<NetworkConfig> {
     const a = get().agents.find((x) => x.id === id);
     if (!a) return { ok: false, error: "That agent does not exist." };
     if (a.state === "retired") return { ok: false, error: "A retired agent cannot be changed." };
@@ -255,7 +255,7 @@ export const exposure = {
     if (cur.access.keys.filter((k) => k.status === "active").length >= 20) return { ok: false, error: "An agent can have 20 active keys. Revoke one you no longer use." };
     if (input.rateLimitPerMin !== undefined && !(input.rateLimitPerMin >= 1)) return { ok: false, error: "A per key limit must be at least 1 a minute." };
     const m = makeKey(input.env); const now = new Date();
-    const key: ApiKey = { id: nid("key"), name, prefix: m.prefix, last4: m.last4, hash: m.hash, scopes: input.scopes, env: input.env, createdAt: now.toISOString(), createdBy: input.createdBy ?? "nestor@nexi.com",
+    const key: ApiKey = { id: nid("key"), name, prefix: m.prefix, last4: m.last4, hash: m.hash, scopes: input.scopes, env: input.env, createdAt: now.toISOString(), createdBy: input.createdBy ?? "jdoe@example.com",
       expiresAt: input.expiresInDays ? new Date(now.getTime() + input.expiresInDays * 86_400_000).toISOString() : null, lastUsedAt: null, requests30d: 0, status: "active", rateLimitPerMin: input.rateLimitPerMin, allowedOrigins: input.allowedOrigins?.length ? input.allowedOrigins : undefined };
     patchExposure(agentId, (e) => ({ ...e, access: { ...e.access!, keys: [key, ...e.access!.keys] } }));
     return { ok: true, value: { key, secret: m.secret } };

@@ -103,7 +103,7 @@ export const GOVERNANCE: DocSection = {
           { title: "Check the pipeline preview", body: "The panel on the right lists the stages a file passes through under this policy, so you can see where scanning, extraction and masking happen." },
         ] },
         { t: "callout", tone: "sample", title: "What this screen does today", text: "Document Policies shows sample policies. The accepted type list is an allow list that is planned; the document processor currently accepts every supported format. **New document policy** and **Save policy** do not store a policy yet. In a connected organization this screen says **Not connected to your workspace yet**." },
-        { t: "cards", items: [{ title: "Cost Optimization", body: "Process a document once and reuse it.", href: "/docs/governance/cost-optimization" }, { title: "Knowledge", body: "Documents your agents can search.", href: "/docs/models/knowledge" }] },
+        { t: "cards", items: [{ title: "Cost Optimization", body: "Process a document once and reuse it.", href: "/docs/governance/cost-optimization" }, { title: "RAG", body: "Documents your agents can search.", href: "/docs/models/rag" }] },
       ],
     },
     {

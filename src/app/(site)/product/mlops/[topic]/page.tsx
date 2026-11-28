@@ -27,7 +27,7 @@ export default async function Topic({ params }: { params: Promise<{ topic: strin
   const others = MLOPS_TOPICS.filter((x) => x.slug !== t.slug).slice(0, 3);
   return (
     <>
-      <PageHero eyebrow={`MLOps / ${t.name}`} title={t.headline} lead={t.body}>
+      <PageHero eyebrow={`MLOps / ${t.name}`} title={t.headline} lead={t.short}>
         <LinkButton href="/signup" arrow>Get started free</LinkButton>
         <LinkButton href="/product/mlops" variant="ghost-dark">MLOps overview</LinkButton>
       </PageHero>

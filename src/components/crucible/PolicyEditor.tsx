@@ -18,7 +18,7 @@ export function blankPolicy(experimentId: string, model: string): CtPolicy {
     id: `ctp-${Date.now().toString(36)}`, name: "", model, experimentId, state: "draft", source: Object.values(DATASETS)[0].name,
     triggers: [{ kind: "dataset-version", detail: Object.values(DATASETS)[0].name }, { kind: "manual", detail: "A person" }], window: { kind: "rolling", value: 90 },
     gates: { metric: "f1_macro", floor: 0.9, noSliceRegression: true, maxFairnessGap: 0.05, maxMemoryGb: 24, maxP95Ms: 100 }, approval: "person", tier: "standard",
-    budget: { monthlyUsd: 200, spentUsd: 0 }, maxCyclesPerDay: 2, champion: { version: 1, metric: 0.9 }, owner: "nestor@nexi.com", createdAt: new Date().toISOString(),
+    budget: { monthlyUsd: 200, spentUsd: 0 }, maxCyclesPerDay: 2, champion: { version: 1, metric: 0.9 }, owner: "jdoe@example.com", createdAt: new Date().toISOString(),
   };
 }
 

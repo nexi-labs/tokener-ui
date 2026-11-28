@@ -28,8 +28,8 @@ export const USE_CASE_CATALOG: UseCaseEntry[] = [
   {
     "slug": "rag-customer-support-answers",
     "industry": "knowledge",
-    "title": "Support answers grounded in the knowledge base, with escalation built in",
-    "summary": "A customer-facing assistant answers from the published knowledge base, links the article, and hands over to an agent when it is not sure.",
+    "title": "Support answers grounded in the RAG index, with escalation built in",
+    "summary": "A customer-facing assistant answers from the published RAG index, links the article, and hands over to an agent when it is not sure.",
     "tags": [
       "RAG",
       "Support",
@@ -76,7 +76,7 @@ export const USE_CASE_CATALOG: UseCaseEntry[] = [
   {
     "slug": "knowledge-evaluation-before-launch",
     "industry": "knowledge",
-    "title": "Test a knowledge base before anyone depends on it",
+    "title": "Test a RAG index before anyone depends on it",
     "summary": "Keep a test set of questions with the document that should answer each, run it on every change, and launch only when recall holds.",
     "tags": [
       "Retrieval",
@@ -568,7 +568,7 @@ export const USE_CASE_CATALOG: UseCaseEntry[] = [
   {
     "slug": "healthcare-protocol-knowledge-base",
     "industry": "healthcare",
-    "title": "A protocol knowledge base for clinicians, with citations and permissions",
+    "title": "A protocol RAG index for clinicians, with citations and permissions",
     "summary": "Clinical protocols and pharmacy guidance indexed once, queried through the gateway, limited to what each role may read and always cited.",
     "tags": [
       "Retrieval",
@@ -592,8 +592,8 @@ export const USE_CASE_CATALOG: UseCaseEntry[] = [
   {
     "slug": "legal-matter-knowledge-bases",
     "industry": "legal",
-    "title": "A knowledge base per matter, open only to the matter team",
-    "summary": "Each matter gets its own knowledge base fed from the matter folder, queryable only by the people on the matter, and archived with it when the matter closes.",
+    "title": "A RAG index per matter, open only to the matter team",
+    "summary": "Each matter gets its own RAG index fed from the matter folder, queryable only by the people on the matter, and archived with it when the matter closes.",
     "tags": [
       "Retrieval",
       "Permissions",
@@ -718,6 +718,42 @@ export const USE_CASE_CATALOG: UseCaseEntry[] = [
       "Refinery",
       "Feature engineering",
       "Churn"
+    ],
+    "hasPipeline": false
+  },
+  {
+    "slug": "agent-networks-claims-isolation",
+    "industry": "insurance",
+    "title": "Keeping the claims agents apart from the agents that can pay",
+    "summary": "An insurer puts its agents in named networks, so the agent that reads customer messages can reach the claims team through one approved path and can never reach the agent that sends money.",
+    "tags": [
+      "Agent Networks",
+      "Agents",
+      "Security"
+    ],
+    "hasPipeline": false
+  },
+  {
+    "slug": "agent-mesh-motor-claims",
+    "industry": "insurance",
+    "title": "Settling motor claims with a mesh of agents and a person where it counts",
+    "summary": "Five agents work one claim together: intake, documents, policy wording, invoice matching and payout. A mesh sets the order, the limits per claim and the point where a person decides.",
+    "tags": [
+      "Agent Mesh",
+      "Agents",
+      "Approvals"
+    ],
+    "hasPipeline": false
+  },
+  {
+    "slug": "own-model-behind-mcp",
+    "industry": "enterprise",
+    "title": "Hosting your own model and offering it to agents as a tool",
+    "summary": "A company runs an open model on its own GPUs, puts it behind the gateway, then exposes it as a tool on an MCP server that only chosen agents can call. The AI canvas shows the whole path.",
+    "tags": [
+      "MLOps",
+      "MCP",
+      "Gateway"
     ],
     "hasPipeline": false
   }

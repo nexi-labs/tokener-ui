@@ -190,7 +190,7 @@ export const SAMPLE_KEY = "tok_ak_test_SampleKeyForTheTryPanelOnly0000000000";
 function sampleAccess(): Access {
   const now = Date.now(); const D = 86_400_000;
   const key = (id: string, name: string, secret: string, scopes: ApiKey["scopes"], env: ApiKey["env"], ageD: number, expD: number | null, usedH: number | null, req: number, status: ApiKey["status"] = "active", extra: Partial<ApiKey> = {}): ApiKey => ({
-    id, name, prefix: secret.slice(0, 16), last4: secret.slice(-4), hash: sha256Hex(secret), scopes, env, createdAt: new Date(now - ageD * D).toISOString(), createdBy: "nestor@nexi.com",
+    id, name, prefix: secret.slice(0, 16), last4: secret.slice(-4), hash: sha256Hex(secret), scopes, env, createdAt: new Date(now - ageD * D).toISOString(), createdBy: "jdoe@example.com",
     expiresAt: expD === null ? null : new Date(now + expD * D).toISOString(), lastUsedAt: usedH === null ? null : new Date(now - usedH * 3_600_000).toISOString(), requests30d: req, status,
     ...(status === "revoked" ? { revokedAt: new Date(now - 20 * D).toISOString() } : {}), ...extra,
   });

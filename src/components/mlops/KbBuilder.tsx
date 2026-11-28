@@ -30,7 +30,7 @@ type Props = {
   renderSource: (sourceId: string) => ReactNode;
   /** Controls shown above the canvas, for example adding a source. */
   toolbar?: ReactNode;
-  /** The collection and vector store are fixed once a knowledge base exists. */
+  /** The collection and vector store are fixed once a RAG index exists. */
   indexLocked?: boolean;
   overlay?: Record<string, NodeRunStatus>;
   projects?: string[];
@@ -55,7 +55,7 @@ export function KbBuilder(p: Props) {
   if (!selected) {
     inspector = (
       <div className="space-y-3 text-[13px] text-text-secondary">
-        <div className="text-sm font-medium text-text-primary">How this knowledge base runs</div>
+        <div className="text-sm font-medium text-text-primary">How this RAG index runs</div>
         <p>Documents are read from each source, split and embedded, written to the vector index, and served to assistants through retrieval. Select a step to change how it behaves.</p>
         <p className="text-xs text-text-tertiary">The same steps exist as operators in the pipeline builder, so the flow can be reused in a pipeline.</p>
       </div>
@@ -86,7 +86,7 @@ export function KbBuilder(p: Props) {
         <Field label="Vector store connection"><Select disabled={p.indexLocked} value={d.index.connectionId} onChange={(e) => p.onIndex({ connectionId: e.target.value })}><option value="">Choose a connection</option>{stores.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.env})</option>)}</Select></Field>
         <Field label="Collection" hint="Lowercase, numbers, underscores."><Input disabled={p.indexLocked} value={d.index.collection} onChange={(e) => p.onIndex({ collection: e.target.value })} /></Field>
         <Field label="Distance"><Select disabled={p.indexLocked} value={d.index.metric} onChange={(e) => p.onIndex({ metric: e.target.value as KbDraft["index"]["metric"] })}><option value="cosine">Cosine</option><option value="dot">Dot product</option><option value="l2">Euclidean</option></Select></Field>
-        {p.indexLocked && <Notice>The vector store and collection cannot change after creation. Create a new knowledge base to move.</Notice>}
+        {p.indexLocked && <Notice>The vector store and collection cannot change after creation. Create a new RAG index to move.</Notice>}
         {!p.indexLocked && stores.length === 0 && <Notice tone="warn">No vector store connections yet. Add pgvector, Milvus, Qdrant or Weaviate under Integrations.</Notice>}
       </div>
     );
@@ -114,7 +114,7 @@ export function KbBuilder(p: Props) {
       {p.toolbar && <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-border">{p.toolbar}</div>}
       <div className="flex flex-col lg:flex-row">
         <div className="relative flex-1 h-[360px] min-w-0">
-          <FlowCanvas spec={spec} selection={sel} onSelect={setSel} readOnly overlay={p.overlay} fitKey={fitKey} label={`${p.name || "Knowledge base"} flow`} />
+          <FlowCanvas spec={spec} selection={sel} onSelect={setSel} readOnly overlay={p.overlay} fitKey={fitKey} label={`${p.name || "RAG index"} flow`} />
         </div>
         <aside className="lg:w-80 shrink-0 border-t lg:border-t-0 lg:border-l border-border p-4 overflow-y-auto lg:max-h-[360px]" aria-label="Step settings">{inspector}</aside>
       </div>

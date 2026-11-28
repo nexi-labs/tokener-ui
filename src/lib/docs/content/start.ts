@@ -26,7 +26,7 @@ export const START: DocSection = {
         { t: "layers", layers: [
           { label: "Governance", items: ["Policy Studio", "Policy Builder", "Document Policies", "Budgets", "Quotas", "Cost Optimization"], tone: "accent" },
           { label: "Agent OS", items: ["Control Arena", "Agents", "Approvals", "Traces", "Evals", "Forge", "Conductor", "Protocols"] },
-          { label: "Models and Data", items: ["Providers", "Model Registry", "Model Versions", "Crucible", "Knowledge", "Refinery"] },
+          { label: "Models and Data", items: ["Providers", "Model Registry", "Model Versions", "Crucible", "RAG", "Refinery"] },
           { label: "MLOps and Infrastructure", items: ["Pipelines", "Functions", "Deployments", "GPU and CUDA", "Build Agents", "Integrations", "MCP Servers"] },
           { label: "Observability", items: ["Analytics", "Request Trace", "Usage Explorer", "Audit Explorer"] },
           { label: "Organization and Developer", items: ["Tenants", "People", "Roles", "Billing", "API Keys", "Service Accounts", "SDKs"], tone: "ink" },

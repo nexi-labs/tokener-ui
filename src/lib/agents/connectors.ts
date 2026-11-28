@@ -10,7 +10,7 @@ import { Mail, MessageSquare, Webhook, BookOpenText, Plug } from "lucide-react";
  * Agents do not have connectors of their own. They use what the organisation already set up:
  *   - Connections from Integrations (Kafka, object stores, email providers, SMS, Slack and Teams apps, databases, MCP servers),
  *   - Notification Center channels (Slack, Teams, Discord, email and webhook destinations),
- *   - Knowledge bases (the retrieval indexes built in Knowledge).
+ *   - RAG indexes (the retrieval indexes built in RAG).
  * A binding says which of these an agent may use, for what, and through which tool. Nothing here holds a credential: a connection keeps its secret
  * reference in the secret manager, and a channel keeps its webhook address on the server.
  */
@@ -20,7 +20,7 @@ export type Role = "notify" | "approval" | "trigger" | "stream" | "data" | "know
 export type Binding = {
   id: string;
   kind: ResourceKind;
-  /** The id of the connection, the Notification Center channel or the knowledge base. */
+  /** The id of the connection, the Notification Center channel or the RAG index. */
   ref: string;
   role: Role;
   /** The tool that uses it, for example send_email. Absent for bindings that are not a tool call. */
@@ -98,13 +98,13 @@ export function resolve(b: Binding, hub: Hub, agent?: Pick<Agent, "environment" 
   }
   if (b.kind === "knowledge") {
     const k = hub.knowledge.find((x) => x.id === b.ref);
-    if (!k) return { ...b, name: b.ref, subtitle: "Knowledge base", status: "problem", problem: "This knowledge base does not exist any more.", iconKey: "knowledge", href: "/mlops/knowledge" };
+    if (!k) return { ...b, name: b.ref, subtitle: "RAG index", status: "problem", problem: "This RAG index does not exist any more.", iconKey: "knowledge", href: "/mlops/rag" };
     let status: Status = "ready"; let problem: string | undefined;
-    if (k.status === "empty") { status = "problem"; problem = "This knowledge base has no documents yet, so retrieval returns nothing."; }
+    if (k.status === "empty") { status = "problem"; problem = "This RAG index has no documents yet, so retrieval returns nothing."; }
     else if (k.status === "degraded") { status = "warning"; problem = `Its last sync had a problem${k.stale ? ` and ${k.stale} document${k.stale === 1 ? " is" : "s are"} out of date` : ""}. Answers may be old.`; }
     else if (k.status === "indexing") { status = "warning"; problem = "It is being indexed. Some documents may not be searchable yet."; }
-    if (agent?.project && k.projects.length && !k.projects.includes(agent.project)) { status = "problem"; problem = `This knowledge base is open to ${k.projects.join(", ")}, not to the project ${agent.project}. Retrieval will be refused.`; }
-    return { ...b, name: k.name, subtitle: `${k.documents.toLocaleString("en-US")} documents, ${k.embedding}`, status, problem, iconKey: "knowledge", href: `/mlops/knowledge/${k.id}` };
+    if (agent?.project && k.projects.length && !k.projects.includes(agent.project)) { status = "problem"; problem = `This RAG index is open to ${k.projects.join(", ")}, not to the project ${agent.project}. Retrieval will be refused.`; }
+    return { ...b, name: k.name, subtitle: `${k.documents.toLocaleString("en-US")} documents, ${k.embedding}`, status, problem, iconKey: "knowledge", href: `/mlops/rag/${k.id}` };
   }
   const c = hub.connections.find((x) => x.id === b.ref);
   if (!c) return { ...b, name: b.ref, subtitle: "Connection", status: "problem", problem: "This connection is not in Integrations any more.", iconKey: "connection", href: "/mlops/integrations" };
@@ -142,7 +142,7 @@ export function validateBindings(a: Pick<Agent, "bindings" | "execution" | "tool
         }
       }
     }
-    if (b.role === "knowledge" && b.kind !== "knowledge") err(`${r.name} is not a knowledge base.`, b.id);
+    if (b.role === "knowledge" && b.kind !== "knowledge") err(`${r.name} is not a RAG index.`, b.id);
     if ((b.role === "trigger" || b.role === "stream") && b.kind !== "connection") err(`${r.name} is not a connection.`, b.id);
   }
   // A grant for a notification tool with nowhere to send, and a destination with no tool able to reach it.
@@ -205,7 +205,7 @@ export function iconFor(n: { iconKey: string; integrationId?: string }): IconRef
 export type Pt = { x: number; y: number };
 export type Band = { id: ResourceKind; title: string; hint: string; x: number; y: number; w: number; h: number };
 export const NODE = 64; const COLS = 3; const DX = 190; const DY = 128;
-const BAND_TITLE: Record<ResourceKind, { title: string; hint: string }> = { knowledge: { title: "Knowledge", hint: "Retrieval indexes" }, channel: { title: "Notifications", hint: "Channels people read" }, connection: { title: "Connections", hint: "Systems from Integrations" } };
+const BAND_TITLE: Record<ResourceKind, { title: string; hint: string }> = { knowledge: { title: "RAG", hint: "Retrieval indexes" }, channel: { title: "Notifications", hint: "Channels people read" }, connection: { title: "Connections", hint: "Systems from Integrations" } };
 
 export function layoutResources(nodes: UsageNode[], agentPos: Record<string, Pt>, origin: Pt): { pos: Record<string, Pt>; bands: Band[] } {
   const pos: Record<string, Pt> = {}; const bands: Band[] = []; let y = origin.y;

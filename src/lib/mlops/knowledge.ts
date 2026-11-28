@@ -2,7 +2,7 @@ import type { KbChunk, KbEvalQuestion, KbEvalRun, KnowledgeBase } from "./types"
 
 /**
  * Retrieval preview used by the sample workspace. It scores the sample passages by keyword overlap so the playground and the
- * evaluation report real, reproducible numbers over the passages shown. A live knowledge base queries its vector index instead.
+ * evaluation report real, reproducible numbers over the passages shown. A live RAG index queries its vector index instead.
  */
 const STOP = new Set("a an and are as at be by can do does for from has have how i if in is it its my of on or our should that the their then there these they this to was we what when where which who why will with you your".split(" "));
 
@@ -83,15 +83,15 @@ export function usageSnippets(kb: KnowledgeBase): { id: string; label: string; c
 import { newSpec, type PipelineSpec, type SpecNode } from "./spec";
 import type { KbSource } from "./types";
 
-/** The part of a knowledge base that the builder edits. The guided form edits the same fields. */
+/** The part of a RAG index that the builder edits. The guided form edits the same fields. */
 export type KbDraft = Pick<KnowledgeBase, "sources" | "processing" | "embedding" | "index" | "access" | "schedule">;
 
 export const KB_NODE = { embed: "embed", index: "index", query: "query" } as const;
 export const srcNodeId = (s: KbSource) => `src-${s.id}`;
 
 /**
- * Draws a knowledge base as the pipeline it runs: sources, split and embed, index, query. The same operators exist in the
- * pipeline builder, so a knowledge base can later be exported as a pipeline without translation.
+ * Draws a RAG index as the pipeline it runs: sources, split and embed, index, query. The same operators exist in the
+ * pipeline builder, so a RAG index can later be exported as a pipeline without translation.
  */
 export function kbToSpec(name: string, env: KnowledgeBase["env"], d: KbDraft, connName: (id?: string) => string): PipelineSpec {
   let spec = newSpec(name || "knowledge-base", env);

@@ -29,7 +29,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ slug
 
   return (
     <>
-      <PageHero eyebrow={p.name} title={p.headline} lead={p.body}>
+      <PageHero eyebrow={p.name} title={p.headline} lead={p.short}>
         <LinkButton href="/signup" arrow>Get started free</LinkButton>
         <LinkButton href="/demo" variant="ghost-dark">Book a demo</LinkButton>
       </PageHero>

@@ -33,7 +33,7 @@ export type AppPolicy = {
 };
 
 export const APPS: AppPolicy[] = [
-  { id: "support", name: "Support assistant", owner: "Customer Care", mode: "balanced", stages: MODE_STAGES.balanced, maxOutput: 600, cache: true, semantic: true, threshold: 0.93, ttlHours: 24, batch: false, requestsPerDay: 41_800, savedPct: 34, fidelity: 99.1, note: "Long email threads and knowledge base passages." },
+  { id: "support", name: "Support assistant", owner: "Customer Care", mode: "balanced", stages: MODE_STAGES.balanced, maxOutput: 600, cache: true, semantic: true, threshold: 0.93, ttlHours: 24, batch: false, requestsPerDay: 41_800, savedPct: 34, fidelity: 99.1, note: "Long email threads and RAG index passages." },
   { id: "contracts", name: "Contract analyzer", owner: "Legal Operations", mode: "lossless", stages: MODE_STAGES.lossless, maxOutput: 2000, cache: true, semantic: false, threshold: 0.97, ttlHours: 72, batch: true, requestsPerDay: 3_200, savedPct: 17, fidelity: 100, note: "Every clause matters, so only lossless stages are allowed." },
   { id: "review", name: "Code review agent", owner: "Platform Engineering", mode: "lossless", stages: MODE_STAGES.lossless, maxOutput: 1500, cache: true, semantic: false, threshold: 0.97, ttlHours: 6, batch: false, requestsPerDay: 18_600, savedPct: 21, fidelity: 100, note: "Code fences are never altered." },
   { id: "search", name: "Internal search", owner: "IT", mode: "balanced", stages: MODE_STAGES.balanced, maxOutput: 400, cache: true, semantic: true, threshold: 0.9, ttlHours: 12, batch: false, requestsPerDay: 33_900, savedPct: 41, fidelity: 98.4, note: "Retrieval heavy, large gain from pruning duplicates." },
@@ -81,7 +81,7 @@ export const DOC_TYPES: DocType[] = [
   { id: "office", label: "Word and PowerPoint", formats: "DOCX, PPTX, ODT", reads: "Structure read from the file, comments and tracked changes handled by policy", removes: "Styles, layout markup, repeated slide masters", where: "document worker", corpus: [], inspector: false },
   { id: "code", label: "Source code and logs", formats: "Source files, application logs, traces", reads: "Code left exactly as written, runs of identical log lines counted", removes: "Identical consecutive lines, replaced by one line and a count", where: "gateway", corpus: ["log"], inspector: true },
   { id: "legal", label: "Contracts and policies", formats: "Any text, DOCX, PDF", reads: "Clauses kept whole, defined terms found", removes: "Repeated defined phrases are written once", where: "gateway", corpus: ["contract"], inspector: true },
-  { id: "rag", label: "Retrieved passages", formats: "Vector search results, knowledge base chunks", reads: "Passages kept with their source labels", removes: "Passages and sentences that repeat", where: "gateway", corpus: ["rag"], inspector: true },
+  { id: "rag", label: "Retrieved passages", formats: "Vector search results, RAG index chunks", reads: "Passages kept with their source labels", removes: "Passages and sentences that repeat", where: "gateway", corpus: ["rag"], inspector: true },
   { id: "media", label: "Audio and video", formats: "MP3, WAV, MP4", reads: "Transcribed, speakers and timestamps kept as light markers", removes: "Filler words, repeated sentences", where: "GPU worker", corpus: [], inspector: false },
 ];
 
@@ -93,7 +93,7 @@ export type LibraryDoc = {
 /** A document is processed once when it is added or changed. Every later request reads the stored form, so the work is not repeated per request. */
 export const LIBRARY: LibraryDoc[] = [
   { id: "d1", name: "Master services agreement 2026.pdf", type: "PDF with text", rawTokens: 48_200, storedTokens: 41_900, requests30d: 1_240, version: 3, mode: "lossless", updated: "2026-10-18", state: "ready" },
-  { id: "d2", name: "Support knowledge base export.html", type: "Web pages and HTML", rawTokens: 212_000, storedTokens: 58_400, requests30d: 38_900, version: 12, mode: "balanced", updated: "2026-10-29", state: "ready" },
+  { id: "d2", name: "Support RAG index export.html", type: "Web pages and HTML", rawTokens: 212_000, storedTokens: 58_400, requests30d: 38_900, version: 12, mode: "balanced", updated: "2026-10-29", state: "ready" },
   { id: "d3", name: "Q3 ledger.xlsx", type: "Spreadsheets and CSV", rawTokens: 96_500, storedTokens: 41_700, requests30d: 2_310, version: 1, mode: "lossless", updated: "2026-10-12", state: "ready" },
   { id: "d4", name: "Customer escalations mailbox.mbox", type: "Email and chat threads", rawTokens: 530_000, storedTokens: 181_000, requests30d: 9_870, version: 7, mode: "balanced", updated: "2026-10-30", state: "ready" },
   { id: "d5", name: "Branch inspection scans (Oct).pdf", type: "Scans and images", rawTokens: 74_000, storedTokens: 58_200, requests30d: 0, version: 1, mode: "lossless", updated: "2026-10-31", state: "processing" },

@@ -13,7 +13,7 @@ export default function MlopsOverview() {
   const planned = INTEGRATIONS.filter((i) => i.status === "planned").length;
   return (
     <>
-      <PageHero eyebrow="MLOps and AI infrastructure" title="Run models on your own infrastructure, under the same control plane." lead="Connect clusters, registries and data stores. Build deployment pipelines on a canvas or in a wizard. Roll out with approvals, watch capacity and keep an audit trail.">
+      <PageHero eyebrow="MLOps and AI infrastructure" title="Run your own models under the same control plane." lead="Deploy, expose and watch models on infrastructure you control.">
         <LinkButton href="/signup" arrow>Get started free</LinkButton>
         <LinkButton href="/product/mlops/integrations" variant="ghost-dark">See integrations</LinkButton>
       </PageHero>

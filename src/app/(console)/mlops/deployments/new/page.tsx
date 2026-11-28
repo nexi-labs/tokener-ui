@@ -140,7 +140,7 @@ function Wizard() {
           {done.providerId && <div className="flex justify-between"><span className="text-text-tertiary">Gateway provider</span><Link className="underline" href={`/providers/${done.providerId}`}>{depName} (self-hosted)</Link></div>}
           {done.mcpId && <div className="flex justify-between"><span className="text-text-tertiary">MCP tool</span><Link className="underline" href={`/mlops/mcp-servers/${done.mcpId}`}><span className="font-mono text-xs">{done.tool}</span></Link></div>}
         </CardBody></Card>
-        <div className="flex gap-3"><Link href={`/mlops/deployments/${done.depId}`}><Button variant="primary">Open deployment</Button></Link><Link href="/mlops/deployments"><Button>All deployments</Button></Link></div>
+        <div className="flex gap-3"><Link href={`/mlops/deployments/${done.depId}`}><Button variant="primary">Open deployment</Button></Link><Link href="/mlops/deployments"><Button>All deployments</Button></Link><Link href="/mlops/canvas"><Button>See it on the AI canvas</Button></Link></div>
       </div>
     );
   }

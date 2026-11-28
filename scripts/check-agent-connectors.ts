@@ -1,5 +1,5 @@
 /**
- * Checks for how agents use the organisation's connections, channels and knowledge bases, for scaling, and for the claims review and approvals.
+ * Checks for how agents use the organisation's connections, channels and RAG indexes, for scaling, and for the claims review and approvals.
  * Run: npx tsx --tsconfig scripts/tsconfig.scripts.json scripts/check-agent-connectors.ts
  */
 import { sampleAgents } from "../src/lib/agents/sample";
@@ -19,7 +19,7 @@ const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
 const hub = sampleHub(); const { agents } = sampleAgents(); const by = (n: string) => agents.find((a) => a.name === n)!;
 
 // ---- the hub holds what the other screens hold
-ok(hub.connections.length >= 20 && hub.channels.length >= 9 && hub.knowledge.length >= 4, "hub has connections, channels and knowledge bases");
+ok(hub.connections.length >= 20 && hub.channels.length >= 9 && hub.knowledge.length >= 4, "hub has connections, channels and RAG indexes");
 for (const id of ["conn-prod-kafka", "conn-prod-email", "conn-prod-sms", "conn-prod-slack", "conn-prod-s3-claims", "conn-prod-s3-contracts"]) ok(hub.connections.some((c) => c.id === id), `hub has ${id}`);
 ok(hub.connections.find((c) => c.id === "conn-prod-email")!.capabilities.includes("send-mail"), "the email connection can send mail");
 ok(hub.connections.find((c) => c.id === "conn-prod-sms")!.capabilities.includes("send-sms"), "the SMS connection can send SMS");
@@ -47,9 +47,9 @@ ok(v({ ...base, bindings: [...(base.bindings ?? []), mk("channel", CH.devNotices
 ok(v({ ...base, bindings: [...(base.bindings ?? []), mk("connection", "conn-prod-sms", "notify", "send_email")] }).some((i) => i.level === "error" && /cannot send email/.test(i.message)), "an SMS connection cannot send email");
 ok(v({ ...base, bindings: [...(base.bindings ?? []), mk("channel", CH.platformAlerts, "notify", "send_email")] }).some((i) => i.level === "error" && /not through/.test(i.message)), "send_email needs a connection, not a channel");
 ok(v({ ...base, bindings: [...(base.bindings ?? []), mk("connection", "does-not-exist", "knowledge")] }).some((i) => i.level === "error"), "a missing connection is an error");
-ok(v({ ...base, bindings: [...(base.bindings ?? []), mk("knowledge", "claims-guidelines", "knowledge")], project: "support-ml" }).some((i) => i.level === "error" && /open to claims-ops/.test(i.message)), "a knowledge base closed to the agent's project");
-ok(v({ ...base, bindings: [...(base.bindings ?? []), mk("knowledge", "product-docs", "knowledge")] }).some((i) => i.level === "error"), "an empty knowledge base");
-ok(v({ ...by("developer-assistant" in {} ? "x" : "onboarding-guide"), }).some((i) => i.level === "warning" && /out of date|sync/.test(i.message)), "a degraded knowledge base is a warning");
+ok(v({ ...base, bindings: [...(base.bindings ?? []), mk("knowledge", "claims-guidelines", "knowledge")], project: "support-ml" }).some((i) => i.level === "error" && /open to claims-ops/.test(i.message)), "a RAG index closed to the agent's project");
+ok(v({ ...base, bindings: [...(base.bindings ?? []), mk("knowledge", "product-docs", "knowledge")] }).some((i) => i.level === "error"), "an empty RAG index");
+ok(v({ ...by("developer-assistant" in {} ? "x" : "onboarding-guide"), }).some((i) => i.level === "warning" && /out of date|sync/.test(i.message)), "a degraded RAG index is a warning");
 const discord = clone(by("pricing-analyst")); discord.execution!.modes.human!.channels = ["console", CH.devNotices];
 ok(validateBindings(discord, hub).some((i) => /switched off/.test(i.message)), "a gate channel that is off is reported");
 const hook = clone(base); hook.execution!.modes.human!.channels = [...hook.execution!.modes.human!.channels]; hook.tools = hook.tools.filter((t) => t.tool !== "send_sms");
@@ -76,8 +76,8 @@ const traces = sampleTraces(agents, [], Date.now(), hub);
 const spans = traces.flatMap((t) => t.spans);
 ok(spans.some((s) => s.attrs?.["connector.key"]), "some spans name the connector they used");
 ok(spans.every((s) => !s.attrs?.["connector.key"] || keys.has(String(s.attrs["connector.key"]))), "every connector key in a trace is one the hub knows");
-ok(spans.some((s) => s.attrs?.["knowledge.key"]), "retrieval spans name their knowledge base");
-ok(spans.every((s) => !s.attrs?.["knowledge.key"] || keys.has(String(s.attrs["knowledge.key"]))), "every knowledge key in a trace is a bound knowledge base");
+ok(spans.some((s) => s.attrs?.["knowledge.key"]), "retrieval spans name their RAG index");
+ok(spans.every((s) => !s.attrs?.["knowledge.key"] || keys.has(String(s.attrs["knowledge.key"]))), "every knowledge key in a trace is a bound RAG index");
 ok(spans.some((s) => s.attrs?.["human.wait"] === true && s.durMs >= 20_000), "gates produce wait spans");
 ok(spans.filter((s) => s.attrs?.["human.wait"]).every((s) => ["approved", "declined"].includes(String(s.attrs!["human.outcome"]))), "a wait span records the outcome");
 ok(traces.some((t) => t.agentIds.includes("agt_15")), "the claims agent appears in traces");
@@ -134,20 +134,20 @@ const NOW = Date.UTC(2026, 10, 18, 12, 0, 0); const list = sampleApprovals(NOW);
 ok(list.filter(isOpen).length === 5 && list.filter((a) => !isOpen(a)).length === 3, "five open, three decided");
 ok(list.filter((a) => a.kind === "claim").every((a) => reviewOf(a) && a.agentId === "agt_15"), "claim approvals carry their review");
 ok(minutesLeft(get("apr_05"), NOW) < 0, "the pricing request is past its time"); ok(minutesLeft(get("apr_01"), NOW) > 0, "the claim request is within its time");
-eq(decide(get("apr_01"), { by: "Nestor Martourez", outcome: "declined", reason: "" }).ok, false, "declining needs a reason");
-const bad = decide(get("apr_01"), { by: "Nestor Martourez", outcome: "approved", reason: "ok" }); ok(!bad.ok && /invoice|dated/i.test((bad as { error: string }).error), "approving a failed claim needs a real reason");
-const forced = decide(get("apr_01"), { by: "Nestor Martourez", outcome: "approved", reason: "The invoice date is a typing error. The garage confirmed by phone." });
+eq(decide(get("apr_01"), { by: "James Doe", outcome: "declined", reason: "" }).ok, false, "declining needs a reason");
+const bad = decide(get("apr_01"), { by: "James Doe", outcome: "approved", reason: "ok" }); ok(!bad.ok && /invoice|dated/i.test((bad as { error: string }).error), "approving a failed claim needs a real reason");
+const forced = decide(get("apr_01"), { by: "James Doe", outcome: "approved", reason: "The invoice date is a typing error. The garage confirmed by phone." });
 ok(forced.ok && forced.value.status === "awaiting-second", "approving a payout above 5,000 waits for a second approver");
 if (forced.ok) {
-  eq(decide(forced.value, { by: "Nestor Martourez", outcome: "approved", reason: "Again, with a reason" }).ok, false, "the first approver cannot also be the second");
+  eq(decide(forced.value, { by: "James Doe", outcome: "approved", reason: "Again, with a reason" }).ok, false, "the first approver cannot also be the second");
   const second = decide(forced.value, { by: "Priya Nair", outcome: "approved", reason: "Confirmed with the garage." });
   ok(second.ok && second.value.status === "approved" && second.value.decisions.map((d) => d.round).join() === "first,second", "a second person completes the approval");
   if (second.ok) { const vias = second.value.activity.map((x) => x.via); ok(vias.includes("connection:conn-prod-email") && vias.includes("connection:conn-prod-sms") && vias.includes(`channel:${CH.claimsDesk}`), "approval notifies the claimant by email and SMS and posts to the desk"); ok(second.value.activity.some((x) => x.kind === "resume"), "the agent resumes"); eq(decide(second.value, { by: "Marcus Webb", outcome: "declined", reason: "Too late" }).ok, false, "a decided request cannot be decided again"); }
 }
-const one = decide(get("apr_03"), { by: "Nestor Martourez", outcome: "approved", reason: "Receipts for the bag are not needed under 300." }); ok(one.ok && one.value.status === "approved", "a payout under the limit needs one approval");
-const dec = decide(get("apr_02"), { by: "Nestor Martourez", outcome: "declined", reason: "Outside the policy wording." }); ok(dec.ok && dec.value.status === "declined" && !dec.value.activity.some((x) => x.via === "connection:conn-prod-sms"), "a decline emails but does not text");
-const back = decide(get("apr_02"), { by: "Nestor Martourez", outcome: "changes", reason: "Ask for the plumber's invoice." }); ok(back.ok && back.value.status === "changes" && !back.value.activity.some((x) => x.via?.startsWith("connection:")), "sending back writes to nobody outside the company");
-const refund = decide(get("apr_04"), { by: "Nestor Martourez", outcome: "approved", reason: "Photos match." }); ok(refund.ok && refund.value.activity.some((x) => x.via === "connection:conn-prod-email"), "an approved refund emails the customer");
+const one = decide(get("apr_03"), { by: "James Doe", outcome: "approved", reason: "Receipts for the bag are not needed under 300." }); ok(one.ok && one.value.status === "approved", "a payout under the limit needs one approval");
+const dec = decide(get("apr_02"), { by: "James Doe", outcome: "declined", reason: "Outside the policy wording." }); ok(dec.ok && dec.value.status === "declined" && !dec.value.activity.some((x) => x.via === "connection:conn-prod-sms"), "a decline emails but does not text");
+const back = decide(get("apr_02"), { by: "James Doe", outcome: "changes", reason: "Ask for the plumber's invoice." }); ok(back.ok && back.value.status === "changes" && !back.value.activity.some((x) => x.via?.startsWith("connection:")), "sending back writes to nobody outside the company");
+const refund = decide(get("apr_04"), { by: "James Doe", outcome: "approved", reason: "Photos match." }); ok(refund.ok && refund.value.activity.some((x) => x.via === "connection:conn-prod-email"), "an approved refund emails the customer");
 
 console.log(`${pass} checks passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

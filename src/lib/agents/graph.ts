@@ -102,7 +102,7 @@ export type GEdge = { id: string; from: string; to: string; kind: "agent" | "res
 export type GraphData = { nodes: GNode[]; edges: GEdge[]; groups: Group[] };
 
 /**
- * Builds the graph: an agent is a node, a link between two agents is an edge, and with resources on, each knowledge base, channel and connection an
+ * Builds the graph: an agent is a node, a link between two agents is an edge, and with resources on, each RAG index, channel and connection an
  * agent uses is a small node joined to it. A node's weight is how connected it is, which sets its size.
  */
 export function buildGraph(agents: Agent[], links: Link[], usage: { nodes: UsageNode[]; edges: UsageEdge[] }, o: { by: ColorBy; resources: boolean }): GraphData {

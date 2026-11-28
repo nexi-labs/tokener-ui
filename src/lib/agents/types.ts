@@ -54,9 +54,9 @@ export type Agent = {
   switching?: { lastSwitchSim?: number; log: SwitchEvent[] };
   /** How the agent is reached and what it may reach: reach, ingress, egress and logging. Absent means no network setup, and the agent is open to anyone in the organisation. */
   network?: NetworkConfig;
-  /** The project in Tenant Management this agent belongs to. Knowledge bases open to a project are open to its agents. */
+  /** The project in Tenant Management this agent belongs to. RAG indexes open to a project are open to its agents. */
   project?: string;
-  /** The connections, channels and knowledge bases from the organisation that this agent uses. Some bindings follow from how it starts and who decides. */
+  /** The connections, channels and RAG indexes from the organisation that this agent uses. Some bindings follow from how it starts and who decides. */
   bindings?: Binding[];
 };
 

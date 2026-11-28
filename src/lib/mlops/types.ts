@@ -416,7 +416,7 @@ export type ToneName = "healthy" | "degraded" | "down" | "info" | "neutral";
 
 export type IconComponent = LucideIcon;
 
-// ------------------------------------------------------------------ knowledge bases (retrieval)
+// ------------------------------------------------------------------ RAG indexes (retrieval)
 
 export type KbSource = {
   id: string; name: string; kind: "upload" | "object-store";

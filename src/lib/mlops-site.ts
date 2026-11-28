@@ -1,5 +1,5 @@
 import { RefineryGlyph } from "@/components/refinery/RefineryIcon";
-import { Boxes, Cable, GitBranch, Hammer, Rocket, ShieldCheck, Gauge, CalendarClock, Wallet, Blocks, BookOpen, Library, type LucideIcon } from "lucide-react";
+import { Boxes, Cable, Share2, GitBranch, Hammer, Rocket, ShieldCheck, Gauge, CalendarClock, Wallet, Blocks, BookOpen, Library, type LucideIcon } from "lucide-react";
 
 export const MLOPS_STATUS =
   "Every connection is read-only by default and verified by a live test before it is trusted. Secrets stay in your secret manager and are referenced, never stored. Each integration page lists its version targets, prerequisites and the exact permissions it needs.";
@@ -50,18 +50,18 @@ export const MLOPS_TOPICS: MlopsTopic[] = [
     consoleHref: "/mlops/models",
   },
   {
-    slug: "knowledge", name: "Knowledge bases", icon: BookOpen,
+    slug: "rag", name: "RAG", icon: BookOpen,
     short: "Turn documents into a searchable index that assistants query with citations and permissions.",
-    headline: "Give every assistant a knowledge base it can be held to.",
-    body: "Point a knowledge base at a bucket or upload files. tok∑ner scans, splits and embeds the documents, writes them to your own vector store and refreshes only what changed. Assistants query it through the gateway and get passages with their source and page, limited to what the caller may read.",
-    shot: "/screens/mlops-knowledge.webp", shotUrl: "app.tokener.io/mlops/knowledge",
+    headline: "Give every assistant a RAG index it can be held to.",
+    body: "Point a RAG index at a bucket or upload files. tok∑ner scans, splits and embeds the documents, writes them to your own vector store and refreshes only what changed. Assistants query it through the gateway and get passages with their source and page, limited to what the caller may read.",
+    shot: "/screens/mlops-rag.webp", shotUrl: "app.tokener.io/mlops/rag",
     highlights: [
-      { title: "Guided or visual", body: "Create a knowledge base in six guided steps, or draw it on a canvas where sources, splitting, the index and query settings are steps you can select and edit. Both edit the same settings." },
+      { title: "Guided or visual", body: "Create a RAG index in six guided steps, or draw it on a canvas where sources, splitting, the index and query settings are steps you can select and edit. Both edit the same settings." },
       { title: "Fresh and complete", body: "Sync on a schedule or on demand. New and changed files are processed again, removed files are dropped, and a source that cannot be read is shown with the reason instead of failing quietly." },
       { title: "Measured, not assumed", body: "Keep a test set of questions and the document that should answer each. Run it to get recall at 5, rank quality and no-answer accuracy, and see which questions failed." },
     ],
     bullets: ["Sources: uploads and object storage connections", "Structure aware splitting with chunk size and overlap", "Personal data masked before embedding, per document policy", "Your vector store: pgvector, Milvus, Qdrant or Weaviate", "Test search with score, filters and the passage text", "Respect source permissions and require citations", "Changing the model or splitting re-embeds with the old index serving until the new one is ready", "Usage snippets for curl, Python and Node"],
-    consoleHref: "/mlops/knowledge",
+    consoleHref: "/mlops/rag",
   },
   {
     slug: "model-library", name: "Model library and uploads", icon: Library,
@@ -197,6 +197,20 @@ export const MLOPS_TOPICS: MlopsTopic[] = [
     ],
     bullets: ["The tools/list document is previewed exactly as a client will receive it", "Connect instructions for Claude Code, Cursor and other clients", "Argument schemas generated from the fields you define", "Grant people, groups, applications and service accounts access to chosen tools, each with its own rate limit and expiry", "Rate limit per minute and a choice of what the audit record keeps", "Results can be redacted before they reach a model", "Changing a published server returns it to draft until it is checked again"],
     consoleHref: "/mlops/mcp-servers", tutorial: "build-custom-mcp-server",
+  },
+  {
+    slug: "ai-canvas", name: "AI canvas", icon: Share2, scene: "mcp",
+    short: "See how every model reaches the people and agents that use it: the model, the gateway, the MCP servers and who may call them.",
+    headline: "See every model, gateway and MCP path.",
+    body: "Host a model on your own infrastructure, connect an endpoint you already run, or use a vendor, and route all of them through one gateway with the same policy, budgets and audit. Then offer any of them to agents as a tool on an MCP server you choose, and give only the agents you name a grant. The canvas draws it in colour, so a hosted model, your own endpoint, a vendor model, the gateway, a server and its callers are never confused.",
+    shot: "/screens/mlops-ai-canvas.webp", shotUrl: "app.tokener.io/mlops/canvas",
+    highlights: [
+      { title: "Hosted, your own, or a vendor", body: "Deploy a model from the library to your own GPUs, connect an OpenAI compatible endpoint with a secret reference, or register a vendor. Each is a different colour on the canvas and the same kind of provider to the gateway." },
+      { title: "One gateway in front", body: "Applications use one endpoint and one key. A hosted model that is not in the gateway yet is drawn with a dashed line and an action to add it." },
+      { title: "A tool for agents, with a grant", body: "Add a tool that asks a model to an existing or new MCP server. The call still goes through the gateway. A server is closed until it is published and someone has a grant." },
+    ],
+    bullets: ["Point at any model, server or group of callers to light its whole path", "Findings: models outside the gateway, servers in draft, degraded models, published servers nobody can call", "The same path is shown on each deployment, so the person running a model sees where it is exposed", "Sample workspace today: nothing is enforced by a live gateway until you connect your own"],
+    consoleHref: "/mlops/canvas", tutorial: "build-custom-mcp-server",
   },
   {
     slug: "security-and-access", scene: "agent", name: "Security and access", icon: ShieldCheck,

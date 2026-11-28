@@ -1,15 +1,15 @@
 import type { UseCase } from "./types";
 
-const KB = { src: "/screens/mlops-knowledge.webp", url: "app.tokener.io/mlops/knowledge", caption: "A knowledge base as a flow: sources, splitting and embedding, the index and the query settings, coloured by the result of the last sync." };
+const KB = { src: "/screens/mlops-rag.webp", url: "app.tokener.io/mlops/rag", caption: "A RAG index as a flow: sources, splitting and embedding, the index and the query settings, coloured by the result of the last sync." };
 const LIB = { src: "/screens/mlops-library.webp", url: "app.tokener.io/platform/library", caption: "The model library: published models with format, size, scan result and how many teams imported each version." };
 const MODELS = { src: "/screens/mlops-models.webp", url: "app.tokener.io/mlops/models", caption: "Model versions with stage, approvals and the deployments that serve them." };
 
-/** Use cases built around knowledge bases and the model library. */
+/** Use cases built around RAG indexes and the model library. */
 export const FEATURES: UseCase[] = [
   {
     slug: "knowledge-evaluation-before-launch",
     industry: "knowledge",
-    title: "Test a knowledge base before anyone depends on it",
+    title: "Test a RAG index before anyone depends on it",
     summary: "Keep a test set of questions with the document that should answer each, run it on every change, and launch only when recall holds.",
     tags: ["Retrieval", "Evaluation", "Quality"],
     challenge: [
@@ -17,22 +17,22 @@ export const FEATURES: UseCase[] = [
       "Retrieval quality is a property that moves with every change to the documents, the splitting and the embedding model. Without a test set there is no way to say whether a change helped, and no evidence to show a risk team before launch.",
     ],
     solution: [
-      "The team builds a knowledge base from the help centre bucket and a folder of uploaded policies, then writes a test set: each question is paired with the document that should answer it, and a few questions are written to have no answer at all. Running the set reports recall at five, rank quality and no-answer accuracy, and lists every question that failed.",
+      "The team builds a RAG index from the help centre bucket and a folder of uploaded policies, then writes a test set: each question is paired with the document that should answer it, and a few questions are written to have no answer at all. Running the set reports recall at five, rank quality and no-answer accuracy, and lists every question that failed.",
       "Changing the chunk size or the embedding model is a settings change that re-embeds the library while the old index keeps serving. The team runs the set again and compares. The launch checklist is a number everyone can read: recall above the agreed floor, no-answer accuracy above the agreed floor, and every failure explained.",
     ],
     steps: [
-      { title: "Create the knowledge base", body: "Add the bucket and the uploaded policies, choose structure aware splitting and a vector store." },
+      { title: "Create the RAG index", body: "Add the bucket and the uploaded policies, choose structure aware splitting and a vector store." },
       { title: "Write the test set", body: "Pair each question with its expected document, and add questions that should return nothing." },
       { title: "Run the evaluation", body: "Get recall at five, mean reciprocal rank and no-answer accuracy, with the failed questions listed." },
       { title: "Change one setting and run it again", body: "Adjust chunk size or the minimum score, let the index rebuild, and compare the two runs." },
       { title: "Launch against a floor", body: "Allow the assistant's project to query the base only when the agreed measures are met." },
     ],
     scene: {
-      alt: "A test set of questions is run against a knowledge base. The evaluation reports recall and lists failures. After a settings change the set is run again and the result improves.",
+      alt: "A test set of questions is run against a RAG index. The evaluation reports recall and lists failures. After a settings change the set is run again and the result improves.",
       caption: "A change is judged by the same questions every time, so progress is a number.",
       cols: [
         [["qs", "Test set", "questions and expected sources", "l:ListChecks"]],
-        [["kb", "Knowledge base", "retrieval", "l:Database", true]],
+        [["kb", "RAG index", "retrieval", "l:Database", true]],
         [["ev", "Evaluation", "recall at 5, MRR", "l:BarChart3"]],
         [["fix", "Settings change", "chunk size, min score", "l:Wrench"]],
         [["gate", "Launch gate", "recall floor", "l:ShieldCheck"]],
@@ -87,7 +87,7 @@ export const FEATURES: UseCase[] = [
   {
     slug: "healthcare-protocol-knowledge-base",
     industry: "healthcare",
-    title: "A protocol knowledge base for clinicians, with citations and permissions",
+    title: "A protocol RAG index for clinicians, with citations and permissions",
     summary: "Clinical protocols and pharmacy guidance indexed once, queried through the gateway, limited to what each role may read and always cited.",
     tags: ["Retrieval", "Citations", "Permissions"],
     challenge: [
@@ -95,23 +95,23 @@ export const FEATURES: UseCase[] = [
       "The material is not uniformly open. Some guidance is for pharmacists, some for a single department, and some references patient pathways that carry personal data. A single index that anyone can query would be a breach, and separate unrelated indexes would be unmaintainable.",
     ],
     solution: [
-      "Each audience gets a knowledge base fed from its own bucket, with the documents scanned, split on their structure and masked of personal data before embedding. The vector store sits in the hospital's own environment. Retrieval respects source permissions, so a result is returned only if the caller could open the document in the source system.",
+      "Each audience gets a RAG index fed from its own bucket, with the documents scanned, split on their structure and masked of personal data before embedding. The vector store sits in the hospital's own environment. Retrieval respects source permissions, so a result is returned only if the caller could open the document in the source system.",
       "Every answer carries the document, version and page, and the assistant is configured to refuse when nothing clears the minimum score instead of improvising. A weekly sync processes only the circulars that changed, and the evaluation set, written with the clinical safety officer, runs after every sync.",
     ],
     steps: [
-      { title: "One base per audience", body: "Pharmacy, medicine and nursing each get a knowledge base fed from their own source." },
+      { title: "One base per audience", body: "Pharmacy, medicine and nursing each get a RAG index fed from their own source." },
       { title: "Mask before embedding", body: "Personal data is masked under the document policy before anything is embedded." },
       { title: "Query through the gateway", body: "The assistant asks the base on behalf of a clinician, with policy and budget applied." },
       { title: "Filter by permission", body: "Only passages the clinician could open in the source system are returned." },
       { title: "Cite or decline", body: "Answers carry document, version and page. Below the minimum score, the assistant says it does not know." },
     ],
     scene: {
-      alt: "A clinician asks a question. The assistant queries the knowledge base, which filters passages by role and returns cited passages or declines when nothing is relevant.",
+      alt: "A clinician asks a question. The assistant queries the RAG index, which filters passages by role and returns cited passages or declines when nothing is relevant.",
       caption: "The assistant may only quote what the clinician could read, and says so when it has nothing.",
       cols: [
         [["cl", "Clinician", "ward round", "l:Stethoscope"]],
         [["as", "Assistant", "through the gateway", "l:Bot"]],
-        [["kb", "Protocol knowledge base", "own environment", "l:BookOpen", true]],
+        [["kb", "Protocol RAG index", "own environment", "l:BookOpen", true]],
         [["acl", "Permission filter", "role based", "l:Lock"]],
         [["ans", "Cited answer", "document, version, page", "l:FileCheck"]],
       ],
@@ -164,30 +164,30 @@ export const FEATURES: UseCase[] = [
   {
     slug: "legal-matter-knowledge-bases",
     industry: "legal",
-    title: "A knowledge base per matter, open only to the matter team",
-    summary: "Each matter gets its own knowledge base fed from the matter folder, queryable only by the people on the matter, and archived with it when the matter closes.",
+    title: "A RAG index per matter, open only to the matter team",
+    summary: "Each matter gets its own RAG index fed from the matter folder, queryable only by the people on the matter, and archived with it when the matter closes.",
     tags: ["Retrieval", "Permissions", "Retention"],
     challenge: [
       "A firm's documents are separated by matter for a reason. Ethical walls, client confidentiality and conflicts rules all say that people on one matter must not see another's files. A shared search index over everything, however useful, would break that on day one.",
       "At the other end, a manual process that gives each matter its own tooling is slow to start and impossible to retire. When a matter closes, the index, the embeddings and the access list have to go with it, and someone has to prove that they did.",
     ],
     solution: [
-      "Opening a matter creates a knowledge base fed from the matter's folder in the document management system. Only the matter team's project may query it, and source permissions are enforced on top, so a person removed from the folder loses access to the passages too. Personal data is masked under the matter's document policy before embedding.",
-      "Answers always cite the document and page, which is what a fee earner needs to check a point. When the matter closes, the knowledge base is deleted, which drops the collection from the vector store, and the audit trail records who deleted it and when. The source files are not touched, so the firm's retention rules continue to apply to the originals.",
+      "Opening a matter creates a RAG index fed from the matter's folder in the document management system. Only the matter team's project may query it, and source permissions are enforced on top, so a person removed from the folder loses access to the passages too. Personal data is masked under the matter's document policy before embedding.",
+      "Answers always cite the document and page, which is what a fee earner needs to check a point. When the matter closes, the RAG index is deleted, which drops the collection from the vector store, and the audit trail records who deleted it and when. The source files are not touched, so the firm's retention rules continue to apply to the originals.",
     ],
     steps: [
-      { title: "Open the matter", body: "A knowledge base is created from the matter folder, with its own collection." },
+      { title: "Open the matter", body: "A RAG index is created from the matter folder, with its own collection." },
       { title: "Limit access", body: "Only the matter team's project may query it, and folder permissions apply on top." },
       { title: "Search with citations", body: "Fee earners ask questions and receive passages with document and page." },
       { title: "Keep it current", body: "New and changed documents are picked up on the next sync, and removed ones are dropped." },
-      { title: "Close the matter", body: "The knowledge base is deleted, the collection is dropped and the deletion is audited." },
+      { title: "Close the matter", body: "The RAG index is deleted, the collection is dropped and the deletion is audited." },
     ],
     scene: {
-      alt: "A matter folder feeds a knowledge base that only the matter team can query. When the matter closes the knowledge base is deleted and the deletion is recorded.",
+      alt: "A matter folder feeds a RAG index that only the matter team can query. When the matter closes the RAG index is deleted and the deletion is recorded.",
       caption: "Access follows the matter, and so does deletion.",
       cols: [
         [["fold", "Matter folder", "document management", "l:FolderOpen"]],
-        [["kb", "Matter knowledge base", "own collection", "l:BookOpen", true]],
+        [["kb", "Matter RAG index", "own collection", "l:BookOpen", true]],
         [["team", "Matter team", "allowed project", "l:Users"], ["other", "Other matter team", "no access", "l:Lock"]],
         [["aud", "Audit trail", "", "l:Archive"]],
       ],
@@ -195,8 +195,8 @@ export const FEATURES: UseCase[] = [
     },
     systems: ["Document management", "Matter database", "Microsoft Entra ID", "e-Discovery"],
     controls: ["Project allow list per matter", "Source permissions enforced", "Personal data masking per matter policy", "Deletion audited, originals untouched"],
-    measures: ["Matters with their own knowledge base", "Access attempts refused", "Time to open and to close a matter", "Questions answered with a citation"],
-    example: "A fee earner on a commercial dispute asks which witness statements mention a delivery date. The assistant returns five passages with the statement and page. A colleague on a different matter asks the same assistant the same question and is told the knowledge base is not available to their project.",
+    measures: ["Matters with their own RAG index", "Access attempts refused", "Time to open and to close a matter", "Questions answered with a citation"],
+    example: "A fee earner on a commercial dispute asks which witness statements mention a delivery date. The assistant returns five passages with the statement and page. A colleague on a different matter asks the same assistant the same question and is told the RAG index is not available to their project.",
     console: { ...KB },
   },
   {
@@ -210,22 +210,22 @@ export const FEATURES: UseCase[] = [
       "The assistant also has to be safe by default. A docs bot that can be talked into answering anything is a liability, and one that runs without a budget is an invoice waiting to happen.",
     ],
     solution: [
-      "The team uploads its Markdown docs, or points the knowledge base at the bucket that the docs site builds into, and chooses the default embedding model through the gateway. The vector store is a pgvector database the team already runs. The knowledge base is created in the guided form in a few minutes, and a nightly refresh picks up the docs that changed.",
+      "The team uploads its Markdown docs, or points the RAG index at the bucket that the docs site builds into, and chooses the default embedding model through the gateway. The vector store is a pgvector database the team already runs. The RAG index is created in the guided form in a few minutes, and a nightly refresh picks up the docs that changed.",
       "The assistant queries the base with a minimum score, so it declines instead of guessing, and every answer cites the page. A monthly budget on the project warns the founders at eighty percent and blocks at the limit. All of it fits the free plan limits, and the team can move to a paid plan when it needs more sources or seats.",
     ],
     steps: [
-      { title: "Create the knowledge base", body: "Upload the docs or point at the bucket, and pick the embedding model in the guided form." },
+      { title: "Create the RAG index", body: "Upload the docs or point at the bucket, and pick the embedding model in the guided form." },
       { title: "Use the database you have", body: "Connect the pgvector database the team already runs." },
       { title: "Serve through the gateway", body: "The assistant calls the base and the model with policy and budget applied." },
       { title: "Decline when unsure", body: "A minimum score makes the assistant say it does not know instead of guessing." },
       { title: "Watch the spend", body: "A monthly budget warns the founders and blocks at the limit." },
     ],
     scene: {
-      alt: "Documentation is indexed into a knowledge base. A customer question goes through the gateway to the knowledge base and a model. A budget warns the founders as spend climbs.",
+      alt: "Documentation is indexed into a RAG index. A customer question goes through the gateway to the RAG index and a model. A budget warns the founders as spend climbs.",
       caption: "Three connections and a budget, and the docs answer the questions.",
       cols: [
         [["docs", "Docs site", "Markdown", "l:BookOpen"]],
-        [["kb", "Knowledge base", "nightly refresh", "l:Database", true]],
+        [["kb", "RAG index", "nightly refresh", "l:Database", true]],
         [["gw", "Gateway", "policy and budget", "l:Network"]],
         [["llm", "Model", "chat default", "b:OpenAI"], ["bud", "Budget", "warn at 80%", "l:Wallet"]],
       ],

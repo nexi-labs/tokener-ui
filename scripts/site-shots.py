@@ -33,7 +33,13 @@ def fit(pg, zoom=0):
 
 
 with sync_playwright() as p:
-    b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium")
+    b = p.chromium.launch()
+    # Sample workspace, signed in as James Doe. A dev server compiles each route on first visit, so allow for it.
+    INIT = "sessionStorage.setItem('tok.demo','1');sessionStorage.setItem('tok.demo.user',JSON.stringify({name:'James Doe',email:'jdoe@example.com',role:'admin'}));"
+    _new = b.new_context
+    def _ctx(*a, **k):
+        c = _new(*a, **k); c.add_init_script(INIT); c.set_default_navigation_timeout(180000); c.set_default_timeout(30000); return c
+    b.new_context = _ctx
 
     # ---- gateway console, 1440 x 900 at 1.5x
     desk = b.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=1.5).new_page()
@@ -55,7 +61,9 @@ with sync_playwright() as p:
     def card(path, name, pre=None, wait=1400):
         if not keep(name): return
         pg.goto(BASE + path, wait_until="load"); pg.wait_for_timeout(wait)
-        if pre: pre()
+        if pre:
+            try: pre()
+            except Exception as e: print("step skipped for", name, str(e).splitlines()[0][:90])
         save(pg, name)
 
     card("/mlops", "mlops-overview")
@@ -77,14 +85,18 @@ with sync_playwright() as p:
         pg.get_by_placeholder("support-classifier-release-2").fill("morning-briefing")
         pg.get_by_role("radio", name=re.compile("Scheduled briefing")).click()
         pg.get_by_role("button", name=re.compile("Create")).first.click(); pg.wait_for_timeout(1500)
-        pg.goto(re.sub(r"/(wizard|edit)$", "/edit", pg.url), wait_until="load"); pg.wait_for_timeout(2000); fit(pg); save(pg, "mlops-agent-builder")
+        if pg.get_by_text("Add a payment method to continue").count():  # saving something metered asks for a card first
+            pg.get_by_role("button", name="Add payment method").click(); pg.wait_for_timeout(500)
+            pg.get_by_label("Name on card").fill("James Doe"); pg.get_by_placeholder("1234 1234 1234 1234").fill("4242424242424242")
+            pg.get_by_label("Security code").fill("123"); pg.get_by_role("button", name=re.compile("Save card")).click(); pg.wait_for_url(re.compile(r"/pipelines/pl-[^/]+/(wizard|edit)$"), timeout=60000)
+        pg.goto(re.sub(r"/(wizard|edit)$", "/edit", pg.url), wait_until="load"); pg.wait_for_timeout(4000); fit(pg); save(pg, "mlops-agent-builder")
 
     for term, name in (("mcp", "mlops-mcp"), ("pay", "mlops-integrations")):
         if not keep(name): continue
         pg.goto(BASE + "/mlops/integrations", wait_until="load"); pg.wait_for_timeout(1500)
         pg.get_by_placeholder(re.compile("Search", re.I)).first.fill(term); pg.wait_for_timeout(600); save(pg, name)
 
-    if keep("mlops-mcp-connection"):
+    if keep("mlops-mcp-connection") and False:  # MCP connectors are not published yet, so the wizard no longer offers them
         pg.goto(BASE + "/mlops/integrations", wait_until="load"); pg.wait_for_timeout(1500)
         pg.get_by_role("button", name=re.compile("Add connection")).first.click(); pg.wait_for_timeout(600)
         pg.locator("select").last.select_option(value="mcp-http"); pg.wait_for_timeout(300)
@@ -97,17 +109,17 @@ with sync_playwright() as p:
     if keep("mlops-connection-wizard"):
         pg.goto(BASE + "/mlops/integrations", wait_until="load"); pg.wait_for_timeout(1500)
         pg.get_by_role("button", name=re.compile("Add connection")).first.click(); pg.wait_for_timeout(600)
-        pg.locator("select").last.select_option(value="mtn-momo"); pg.wait_for_timeout(500)
+        pg.locator("[role=dialog] select").first.select_option(value="custom-payment"); pg.wait_for_timeout(500)
         save(pg, "mlops-connection-wizard")
 
     # ---- knowledge and library
-    if keep("mlops-knowledge"):
-        pg.goto(BASE + "/mlops/knowledge/support-articles", wait_until="load"); pg.wait_for_timeout(1300)
+    if keep("mlops-rag"):
+        pg.goto(BASE + "/mlops/rag/support-articles", wait_until="load"); pg.wait_for_timeout(1300)
         pg.get_by_role("tab", name=re.compile("^Flow")).click(); pg.wait_for_timeout(900)
-        pg.get_by_text("Split and embed").first.click(); pg.wait_for_timeout(400); save(pg, "mlops-knowledge")
+        pg.get_by_text("Split and embed").first.click(); pg.wait_for_timeout(400); save(pg, "mlops-rag")
     if keep("mlops-library"):
         pg.goto(BASE + "/platform/library", wait_until="load"); pg.wait_for_timeout(1000)
-        pg.get_by_role("button", name="Account menu").click(); pg.get_by_text("Platform operator").first.click(); pg.wait_for_timeout(900)
+        pg.get_by_role("button", name="Account menu").first.click(); pg.get_by_text("Platform operator").first.click(); pg.wait_for_timeout(900)
         save(pg, "mlops-library")
 
     # ---- studio

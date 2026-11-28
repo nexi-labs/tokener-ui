@@ -6,7 +6,7 @@ import { AGENT_OS_FAQ, AGENT_OS_FLOW, AGENT_OS_RUNTIMES, AGENT_OS_STATUS, AGENT_
 
 export const metadata = {
   title: "Agent OS | tok∑ner",
-  description: "Register agents from any framework, set budgets and approvals around them, run them the way each one needs, and follow every run as one story.",
+  description: "Register agents from any framework, put them in networks that decide who can reach them, let them work a use case together as a mesh, and follow every run as one story.",
 };
 
 export default function AgentOsPage() {
@@ -14,8 +14,8 @@ export default function AgentOsPage() {
     <>
       <PageHero
         eyebrow="Agent OS"
-        title="Let agents do the work. Keep people in charge of the decisions."
-        lead="Register agents from any framework, set budgets, approvals and data rules around them, run them the way each one needs, and follow every run from the first request to the last approval."
+        title="Agents do the work. People make the decisions."
+        lead="Networks, meshes and approvals for agents from any framework."
       >
         <LinkButton href="/signup" arrow>Get started free</LinkButton>
         <LinkButton href="/product/agent-os#preview" variant="ghost-dark">What is available today</LinkButton>
@@ -45,7 +45,7 @@ export default function AgentOsPage() {
         </Container>
       </section>
 
-      {AGENT_OS_TOPICS.slice(0, 4).map((t, i) => (
+      {AGENT_OS_TOPICS.slice(0, 6).map((t, i) => (
         <section key={t.slug} id={t.slug} className={i % 2 === 0 ? "py-16 sm:py-24 bg-surface-subtle border-y border-border" : "py-16 sm:py-24"}>
           <Container className="grid lg:grid-cols-[0.8fr_1.2fr] gap-10 lg:gap-16 items-center">
             <div className={i % 2 === 0 ? "" : "lg:order-2"}>
@@ -67,6 +67,37 @@ export default function AgentOsPage() {
           </Container>
         </section>
       ))}
+
+      <section id="networks-and-mesh" className="py-16 sm:py-24 bg-ink-800 relative overflow-hidden scroll-mt-20">
+        <Container className="relative">
+          <Eyebrow dark>Networks and mesh</Eyebrow>
+          <H2 dark>Who can reach an agent is one question. Who works with whom is another.</H2>
+          <Lead dark>Most teams need both answers before agents touch money, health records or customers. A network is the boundary. A mesh is the team that works inside the boundaries, with limits and a person where it counts.</Lead>
+          <div className="mt-10 grid lg:grid-cols-2 gap-6">
+            {[
+              { t: "Agent Networks", q: "Who can reach this agent, and what may it call?", d: "Claims agents sit in a private network. Finance agents sit in another. The two are peered on purpose, so a payout can be prepared, and a call from anywhere else is refused with the reason.", id: "agentnet", href: "/use-cases/agent-networks-claims-isolation" },
+              { t: "Agent Mesh", q: "Who works the case, in what order, and when does a person decide?", d: "Intake, documents, cover, invoice and payout work one claim as a pipeline. The mesh caps handoffs, cost and time, and a person approves before the money moves.", id: "agentmesh", href: "/use-cases/agent-mesh-motor-claims" },
+            ].map((c) => (
+              <div key={c.id} className="rounded-xl border border-white/10 bg-ink-900/60 p-6">
+                <h3 className="text-lg font-semibold text-text-inverse">{c.t}</h3>
+                <p className="text-sm text-accent-500 mt-1">{c.q}</p>
+                <p className="text-sm text-text-tertiary mt-3 leading-relaxed">{c.d}</p>
+                <div className="mt-5"><FlowScene id={c.id} bare /></div>
+                <div className="mt-4"><TextLink href={c.href} dark>Read the use case</TextLink></div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 grid md:grid-cols-3 gap-4 text-sm">
+            {[
+              ["Checked against each other", "A mesh handoff between agents that no network lets talk is an error, and a mesh with errors cannot go live."],
+              ["One picture", "The Constellation shows networks as zones, peering as dashed lines, and a mesh as arrows with their conditions."],
+              ["Honest about today", "Both run against the sample workspace. The mesh replays a sample case and nothing enforces a network at a real edge yet."],
+            ].map(([t, b]) => (
+              <div key={t} className="rounded-lg border border-white/10 p-5"><p className="font-semibold text-text-inverse">{t}</p><p className="text-text-tertiary mt-1.5 leading-relaxed">{b}</p></div>
+            ))}
+          </div>
+        </Container>
+      </section>
 
       <section className="py-16 sm:py-24">
         <Container>
@@ -102,7 +133,7 @@ export default function AgentOsPage() {
           <Eyebrow>And the rest</Eyebrow>
           <H2>Everything around the agent.</H2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
-            {AGENT_OS_TOPICS.slice(4).map((t) => (
+            {AGENT_OS_TOPICS.slice(6).map((t) => (
               <div key={t.slug} id={t.slug} className="rounded-xl border border-border p-6">
                 <t.icon size={22} strokeWidth={1.6} className="text-ink-500" />
                 <h3 className="font-semibold text-text-primary mt-3">{t.name}</h3>
@@ -166,7 +197,7 @@ export default function AgentOsPage() {
             {[
               { h: "/product/mlops", t: "MLOps and AI infrastructure", d: "Connect clusters, build pipelines, deploy and observe models." },
               { h: "/product/policy-engine", t: "Policy Engine", d: "Governance written as versioned policy, enforced on every request." },
-              { h: "/connectors", t: "Connectors", d: "The systems agents reach, with honest status for each." },
+              { h: "/product/mlops/ai-canvas", t: "AI canvas", d: "Bring your own model, put it behind the gateway and offer it to agents as an MCP tool." },
             ].map((o) => (
               <Link key={o.h} href={o.h} className="rounded-xl border border-border p-6 hover:border-border-strong hover:shadow-card transition-all">
                 <h3 className="font-semibold text-text-primary">{o.t}</h3>

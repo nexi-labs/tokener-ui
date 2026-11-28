@@ -12,7 +12,7 @@ export const REFINERY: DocSection = {
       console: "/refinery",
       role: "viewer",
       blocks: [
-        { t: "p", text: "Models are only as good as the data they learn from. The Refinery connects to where data lives, cleans and reshapes it with ordered steps called a **recipe**, and writes the result as a **dataset** that Crucible and knowledge bases can use. A recipe can run as a batch job or on a stream as records arrive." },
+        { t: "p", text: "Models are only as good as the data they learn from. The Refinery connects to where data lives, cleans and reshapes it with ordered steps called a **recipe**, and writes the result as a **dataset** that Crucible and RAG indexes can use. A recipe can run as a batch job or on a stream as records arrive." },
         { t: "flow", steps: [
           { label: "Connection", sub: "Object store, database, stream or uploaded files", tone: "muted" },
           { label: "Dataset", sub: "A schema and a profile for what is there", tone: "muted" },

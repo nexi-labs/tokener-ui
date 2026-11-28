@@ -8,7 +8,7 @@ export const metadata = { title: "Pricing | tok∑ner" };
 export default function PricingPage() {
   return (
     <>
-      <PageHero eyebrow="Pricing" title="Start free. Pay for what you use." lead="New organizations start with usage credit and no card, and can try any feature. A payment method is asked for when you save or launch something metered, and you are billed only for usage beyond your free credit. Billing is metered by usage, not by seat, so every team can have access." />
+      <PageHero eyebrow="Pricing" title="Start free. Pay for what you use." lead="Free credit to start, no card. Then pay for usage, not seats." />
       <section className="py-16 sm:py-20 -mt-1">
         <Container className="grid lg:grid-cols-3 gap-5 items-stretch">
           {TIERS.map((t) => (

@@ -8,7 +8,7 @@ export const metadata = { title: "Solutions | tok∑ner" };
 export default function SolutionsPage() {
   return (
     <>
-      <PageHero eyebrow="Solutions" title="Whatever you build, someone will ask how it is governed." lead="Banks, insurers, health systems, retailers, manufacturers, logistics operators, utilities, carriers, schools, law firms, public agencies and software teams use the same control plane with different guardrails." />
+      <PageHero eyebrow="Solutions" title="Whatever you build, someone will ask how it is governed." lead="The same control plane, with different guardrails for each industry." />
       <section className="pt-14 sm:pt-20">
         <Container><IndustryExplorer /></Container>
       </section>

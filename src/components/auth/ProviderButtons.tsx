@@ -3,17 +3,18 @@
 import { useEffect, useState } from "react";
 import { siGithub } from "simple-icons";
 import { GoogleG } from "@/components/icons/GoogleG";
+import { MicrosoftLogo } from "@/components/icons/MicrosoftLogo";
 import { SimpleIcon } from "@/components/icons/SimpleIcon";
 import { authApi, ApiError, type ProvidersResponse } from "@/lib/auth/client";
 import { rememberNext } from "@/lib/auth/next";
 import { FormAlert } from "./fields";
 
-const ICONS = { google: null, github: siGithub } as const;
-const LABELS = { google: "Google", github: "GitHub" } as const;
+const ICONS = { google: null, microsoft: null, github: siGithub } as const;
+const LABELS = { google: "Google", microsoft: "Microsoft", github: "GitHub" } as const;
 type Id = keyof typeof ICONS;
 
 /**
- * Continue with Google or GitHub. The browser is sent to the provider and returns to /auth/callback, which completes the sign-in with the
+ * Continue with Google, Microsoft or GitHub. The browser is sent to the provider and returns to /auth/callback, which completes the sign-in with the
  * server. A provider the operator has not configured is shown disabled rather than hidden, so the page does not change shape between installs.
  */
 export function ProviderButtons({ intent, organization, next, prepare, config }: {
@@ -62,7 +63,7 @@ export function ProviderButtons({ intent, organization, next, prepare, config }:
           return (
             <button key={id} type="button" onClick={() => go(id)} disabled={busy !== null || offline} title={offline ? `${LABELS[id]} sign-in is not configured on this installation` : undefined}
               className="w-full h-11 rounded-md border border-border-strong bg-surface hover:bg-surface-subtle disabled:opacity-50 disabled:hover:bg-surface transition-colors flex items-center justify-center gap-2.5 text-sm font-medium text-text-primary">
-              {id === "google" ? <GoogleG size={18} /> : <SimpleIcon icon={siGithub} size={18} />}
+              {id === "google" ? <GoogleG size={18} /> : id === "microsoft" ? <MicrosoftLogo size={18} /> : <SimpleIcon icon={siGithub} size={18} />}
               {busy === id ? "Redirecting..." : `${verb} ${LABELS[id]}`}
             </button>
           );

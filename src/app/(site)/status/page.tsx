@@ -15,7 +15,7 @@ const COMPONENTS = [
 export default function StatusPage() {
   return (
     <>
-      <PageHero eyebrow="Status" title="All systems operational." lead="Preview data. Connect this page to your monitoring stack to publish live component health and incident history." />
+      <PageHero eyebrow="Status" title="All systems operational." lead="Preview data. Connect your monitoring stack to publish live health." />
       <section className="py-16 sm:py-24">
         <Container className="max-w-[820px]">
           <div className="rounded-xl border border-border divide-y divide-border">

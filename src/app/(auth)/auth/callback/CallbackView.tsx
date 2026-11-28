@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { ApiError, authApi } from "@/lib/auth/client";
 import { takeNext } from "@/lib/auth/next";
 
-/** Where Google and GitHub send the browser back. The code and state go to the server, which checks them and issues the session. */
+/** Where Google, Microsoft and GitHub send the browser back. The code and state go to the server, which checks them and issues the session. */
 export function CallbackView() {
   const params = useSearchParams();
   const router = useRouter();

@@ -56,7 +56,7 @@ PIPELINE vision-qa PROMOTE staging -> production
 export default function CustomersPage() {
   return (
     <>
-      <PageHero eyebrow="Customers" title="How teams put tok∑ner to work." lead="Six scenarios drawn from the problems the platform was built to solve, each with the configuration that answers it. Named customer stories are added here as customers agree to share them." />
+      <PageHero eyebrow="Customers" title="How teams put tok∑ner to work." lead="Six scenarios, each with the configuration that answers it." />
       <section className="py-16 sm:py-24">
         <Container className="flex flex-col gap-10">
           {SCENARIOS.map((s) => (

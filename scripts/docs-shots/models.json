@@ -26,17 +26,17 @@
  },
  {
   "name": "models-knowledge",
-  "path": "/mlops/knowledge",
+  "path": "/mlops/rag",
   "wait": 1500
  },
  {
   "name": "models-knowledge-new",
-  "path": "/mlops/knowledge/new",
+  "path": "/mlops/rag/new",
   "wait": 1500
  },
  {
   "name": "models-knowledge-detail",
-  "path": "/mlops/knowledge",
+  "path": "/mlops/rag",
   "wait": 1200,
   "actions": [
    {

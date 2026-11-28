@@ -54,7 +54,7 @@ export function seedServers(): McpServerSpec[] {
           id: "t-inc", name: "summarise_incident", effect: "reads", approval: false,
           description: "Writes a three line summary of an incident from its notes: what happened, the impact and what is next.",
           fields: [{ name: "notes", type: "string", required: true, description: "The raw incident notes." }],
-          source: { kind: "model", alias: "chat-default", instruction: "Summarise the incident in three short lines: what happened, the impact, what happens next." },
+          source: { kind: "model", alias: "vllm-cluster/llama-3-70b", instruction: "Summarise the incident in three short lines: what happened, the impact, what happens next." },
         },
       ],
     },

@@ -28,9 +28,10 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Sign-in methods" subtitle="Google, GitHub, email and password" />
+          <CardHeader title="Sign-in methods" subtitle="Google, Microsoft, GitHub, email and password" />
           <CardBody className="flex flex-col gap-4">
             <SettingRow label="Google" value="Enabled" />
+            <SettingRow label="Microsoft" value="Enabled" />
             <SettingRow label="GitHub" value="Enabled" />
             <SettingRow label="Email and password" value="Enabled, minimum 12 characters" />
           </CardBody>

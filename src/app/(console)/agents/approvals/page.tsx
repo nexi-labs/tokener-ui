@@ -174,7 +174,7 @@ function Detail({ a, actor }: { a: Approval; actor: string }) {
                 </dl>
               </div>
               <ul className="space-y-2.5">{review.checks.map((c) => <CheckRow key={c.id} c={c} onField={(k) => setField(k)} />)}</ul>
-              <p className="text-[11px] text-text-tertiary">Rules come from the Claims guidelines knowledge base. <Link href="/mlops/knowledge/claims-guidelines" className="underline underline-offset-2">Open it</Link></p>
+              <p className="text-[11px] text-text-tertiary">Rules come from the Claims guidelines RAG index. <Link href="/mlops/rag/claims-guidelines" className="underline underline-offset-2">Open it</Link></p>
             </div>
           )}
 

@@ -41,7 +41,7 @@ export function NetworkPanel({ a }: { a: Agent }) {
   const set = (fn: (c: NetworkConfig) => NetworkConfig) => setDraft((d) => (d ? fn(d) : d));
   const setIn = (patch: Partial<NetworkConfig["ingress"]>) => set((c) => ({ ...c, ingress: { ...c.ingress, ...patch } }));
   const setEg = (patch: Partial<NetworkConfig["egress"]>) => set((c) => ({ ...c, egress: { ...c.egress, ...patch } }));
-  const apply = (id: PresetId) => setDraft((d) => presetConfig(id, a, "nestor@nexi.com", id === "private" ? (d?.network ?? networks.find((n) => n.kind === "private")?.id) : d?.network));
+  const apply = (id: PresetId) => setDraft((d) => presetConfig(id, a, "jdoe@example.com", id === "private" ? (d?.network ?? networks.find((n) => n.kind === "private")?.id) : d?.network));
   const save = () => { if (!draft) return; const r = actions.setNetwork(a.id, draft); if (!r.ok) toast(r.error, "error"); else { toast("Network settings saved", "success"); setDraft(r.value); } };
   const remove = () => { actions.clearNetwork(a.id); setDraft(null); setConfirmRemove(false); toast("Network setup removed", "success"); };
 

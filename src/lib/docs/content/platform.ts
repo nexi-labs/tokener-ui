@@ -16,7 +16,7 @@ export const PLATFORM: DocSection = {
         { t: "table", head: ["Card", "What it sets"], rows: [
           ["**Gateway fail-mode defaults**", "What the gateway does when a dependency is unreachable, per tenant overridable: for example, fail-open when the policy engine is unreachable and fail-closed when the budget engine is. Also the provider timeout."],
           ["**Cache TTLs**", "How long the policy bundle, model alias resolution and provider data are cached, in milliseconds."],
-          ["**Sign-in methods**", "Google, GitHub, and email and password, with the minimum password length."],
+          ["**Sign-in methods**", "Google, Microsoft, GitHub, and email and password, with the minimum password length."],
           ["**Data residency**", "The home region and whether a cross-region fallback is allowed."],
         ] },
         { t: "callout", tone: "sample", text: "System Settings shows sample values and **Save changes** does not write to the platform yet. In a connected organization this screen says **Not connected to your workspace yet**." },

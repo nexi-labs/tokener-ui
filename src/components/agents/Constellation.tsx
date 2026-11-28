@@ -74,7 +74,7 @@ export function Constellation({ initialSelect, trace, onSwitchView, full, onTogg
   const base = useMemo(() => layout(all, PREFERRED), [all]);
   const pos = useMemo(() => ({ ...base.pos, ...moved }), [base, moved]);
   const cloud = moved[CLOUD] ?? base.cloud;
-  // Connections, channels and knowledge bases that agents use, laid out in bands to the right of the departments.
+  // Connections, channels and RAG indexes that agents use, laid out in bands to the right of the departments.
   const use = useMemo(() => usage(all, hub), [all, hub]);
   const nodeBy = useMemo(() => new Map(use.nodes.map((n) => [n.key, n])), [use]);
   const res = useMemo(() => {
@@ -599,7 +599,7 @@ function HoverCard({ hover, nodeBy, byId, links, exposures, applied, live, healt
       {n.problem && <p className={`text-xs ${n.status === "problem" ? "text-status-down" : "text-[#8A5504]"}`}>{n.problem}</p>}
       <div className="text-[11px] text-text-tertiary pt-1 border-t border-border">Click for details. Drag to move.</div></div>;
   }
-  if (hover.kind === "band") { const n = nodeBy; const items = [...n.values()].filter((x) => x.kind === hover.id); return <div className="space-y-1 text-xs"><div className="font-semibold text-[13px]">{{ knowledge: "Knowledge", channel: "Notification channels", connection: "Connections" }[hover.id] ?? hover.id}</div>{row("Items", items.length)}<div className="text-[11px] text-text-tertiary pt-1 border-t border-border">Drag the section to move everything in it. Drag one item to move only that item.</div></div>; }
+  if (hover.kind === "band") { const n = nodeBy; const items = [...n.values()].filter((x) => x.kind === hover.id); return <div className="space-y-1 text-xs"><div className="font-semibold text-[13px]">{{ knowledge: "RAG", channel: "Notification channels", connection: "Connections" }[hover.id] ?? hover.id}</div>{row("Items", items.length)}<div className="text-[11px] text-text-tertiary pt-1 border-t border-border">Drag the section to move everything in it. Drag one item to move only that item.</div></div>; }
   if (hover.kind === "cloud") return <div className="text-xs"><div className="font-semibold text-[13px] mb-1">Outside callers</div>Agents with a cloud mark can be called from outside the organisation. Dotted lines show which.</div>;
   const g = boxes.find((b) => b.name === hover.id); if (!g) return null;
   const list = g.members.map((m) => byId.get(m)!).filter(Boolean);

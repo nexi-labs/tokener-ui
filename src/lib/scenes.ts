@@ -314,6 +314,42 @@ export const SCENES: Record<string, Scene> = {
       s("approve", "policy", 12.6, "ok", "approved"), s("policy", "write", 13.6, "bad", "delete_ticket not approved"), s("policy", "audit", 14.7, "info", "logged"),
     ],
   },
+  agentnet: {
+    id: "agentnet", cycle: 14, alt: "A caller reaches the public edge with an app key and is let through to the support triage agent. Support edge is peered with Finance core, so triage can call the refund agent. An agent with no network tries to call the refund agent and is refused.",
+    caption: "A network decides who can reach an agent. Peering is a decision, a call across a boundary without one is refused, and the reason is recorded.",
+    nodes: [
+      n("caller", 90, 180, "Outside caller", L(Cloud), "web page or app"),
+      n("edge", 290, 180, "Public edge", L(ShieldCheck), "key, limits, shield", true),
+      n("triage", 520, 90, "Support triage", L(Bot), "Support edge"),
+      n("faq", 520, 280, "FAQ assistant", L(Bot), "no network"),
+      n("refund", 760, 90, "Refund assistant", L(Wallet), "Finance core"),
+      n("match", 940, 90, "Invoice matcher", L(Receipt), "Finance core"),
+    ],
+    edges: [e("caller", "edge"), e("edge", "triage"), e("edge", "faq"), e("triage", "refund"), e("faq", "refund"), e("refund", "match")],
+    steps: [
+      s("caller", "edge", 0.3, "info", "app key"), s("edge", "triage", 1.3, "ok", "allowed"), s("triage", "refund", 2.4, "ok", "peered"), s("refund", "match", 3.5, "ok", "same network"),
+      s("caller", "edge", 6.2, "bad", "no key, refused"),
+      s("edge", "faq", 8.6, "ok", "allowed"), s("faq", "refund", 9.8, "bad", "blocked, not peered"),
+    ],
+  },
+  agentmesh: {
+    id: "agentmesh", cycle: 17, alt: "A claim moves from intake to the document processor, the contract reviewer and the invoice matcher. A claim over the limit stops for a person to approve before the refund assistant pays. A claim with missing documents goes back to intake.",
+    caption: "A mesh sets the order, the limits per case and the moment a person decides. Each agent keeps doing what it is good at.",
+    nodes: [
+      n("intake", 90, 160, "Claims intake", L(Workflow), "intake"),
+      n("docs", 290, 160, "Document processor", L(ScanSearch), "specialist"),
+      n("review", 500, 90, "Contract reviewer", L(FileCheck), "specialist"),
+      n("match", 500, 250, "Invoice matcher", L(Receipt), "specialist"),
+      n("person", 720, 250, "A person approves", L(UserCheck), "over the limit", true),
+      n("pay", 930, 160, "Refund assistant", L(Wallet), "executor"),
+    ],
+    edges: [e("intake", "docs"), e("docs", "intake"), e("docs", "review"), e("review", "match"), e("match", "person"), e("person", "pay")],
+    steps: [
+      s("intake", "docs", 0.3, "ok", "pack complete"), s("docs", "review", 1.4, "ok", "cover checked"), s("review", "match", 2.5, "ok", "estimate matched"), s("match", "person", 3.6, "warn", "over the limit"), s("person", "pay", 5.4, "ok", "approved"),
+      s("intake", "docs", 9.0, "ok", "pack read"), s("docs", "intake", 10.1, "warn", "missing documents, sent back"),
+      s("intake", "docs", 12.6, "ok", "pack complete"), s("docs", "review", 13.7, "ok", "cover checked"),
+    ],
+  },
   connectors: {
     id: "connectors", cycle: 18, alt: "A system calls a connection. The connection resolves its secret by reference, policy checks the action, and the call reaches a database, a tool server or a chat tool. Reads run, writes wait for approval, and out-of-scope calls are refused. Every call is audited.",
     caption: "One connection, one policy, many systems: reads run, writes wait, out-of-scope calls are refused, and every call is audited.",
@@ -355,6 +391,8 @@ export const SCENE_COPY: Record<string, { title: string; lead: string }> = {
   mlops: { title: "From source to endpoint, with a gate before production.", lead: "Build, scan, register, approve, deploy and observe. If an objective is breached the previous version comes back automatically." },
   agent: { title: "Run on your servers without opening a port.", lead: "The agent asks for work over HTTPS, checks the signature, runs the job next to your systems and reports a scrubbed result." },
   payments: { title: "Collect a payment without touching card data.", lead: "The agent creates the payment with your provider, sends the customer a link and waits. A payment counts only after the provider confirms it and the platform has verified and read it back." },
+  agentnet: { title: "Decide who can reach each agent.", lead: "Agents sit in named networks. A private network is closed unless it is peered, and the edge checks every public call." },
+  agentmesh: { title: "Let agents work one case together.", lead: "A mesh sets the order, the limits per case and where a person decides, and is checked against the networks before it goes live." },
   mcp: { title: "Give agents tools, and keep control of them.", lead: "Connect remote or local MCP servers. You approve each tool, writes wait for a person, and a tool whose definition changes is stopped until someone reviews it." },
   automation: { title: "Agents that keep time, read calendars and send mail.", lead: "Triggers, clocks, calendars and mail providers are operators like any other. Model calls go through the gateway, and nothing is sent without the approval you require." },
 };
@@ -376,11 +414,11 @@ export const HERO_SLIDES: { id: string; tag: string; title: string; scene: Scene
     steps: [s("app", "pol", 0.2), s("pol", "core", 1.1, "ok", "allowed"), s("core", "oa", 2.0, "ok", "200 OK"), s("agent", "pol", 4.2), s("pol", "core", 5.1, "warn", "masked"), s("core", "own", 6.0, "ok", "in your network"), s("app", "pol", 8.2), s("pol", "core", 9.1, "bad", "over budget")],
   } },
   { id: "refinery", tag: "Refinery", title: "Raw data in, training data out", scene: {
-    id: "h-refinery", cycle: 12, height: 250, alt: "Files, databases and streams are cleaned by Refinery and written to a lake, a training pipeline or a knowledge base.",
+    id: "h-refinery", cycle: 12, height: 250, alt: "Files, databases and streams are cleaned by Refinery and written to a lake, a training pipeline or a RAG index.",
     caption: "", nodes: [
       n("s3", 90, 50, "Object storage", SI(siAmazons3)), n("pg", 90, 120, "Databases", SI(siPostgresql)), n("kf", 90, 190, "Streams", SI(siApachekafka)),
       M("core", 500, 120, "Refinery", "clean and shape"),
-      n("lake", 910, 50, "Lake files", SI(siMinio)), n("train", 910, 120, "Training pipeline", L(Rocket)), n("kb", 910, 190, "Knowledge", L(Search)),
+      n("lake", 910, 50, "Lake files", SI(siMinio)), n("train", 910, 120, "Training pipeline", L(Rocket)), n("kb", 910, 190, "RAG", L(Search)),
     ],
     edges: [e("s3", "core"), e("pg", "core"), e("kf", "core"), e("core", "lake"), e("core", "train"), e("core", "kb")],
     steps: [s("s3", "core", 0.2, "info", "94 GB of PDFs"), s("core", "lake", 1.4, "ok", "Parquet"), s("pg", "core", 3.6, "info", "table"), s("core", "train", 4.8, "ok", "split 80/10/10"), s("kf", "core", 7.0, "info", "change log"), s("core", "kb", 8.2, "ok", "chunks")],
@@ -404,11 +442,11 @@ export const HERO_SLIDES: { id: string; tag: string; title: string; scene: Scene
     edges: [e("claim", "core"), e("tk", "core"), e("fw", "core"), e("core", "ap"), e("core", "tr"), e("core", "ev")],
     steps: [s("claim", "core", 0.2, "info", "10 values read"), s("core", "ap", 1.4, "warn", "waits for a person"), s("tk", "core", 3.8, "info", "refund request"), s("core", "tr", 5.0, "ok", "traced"), s("fw", "core", 7.4, "info", "registered"), s("core", "ev", 8.6, "ok", "cases passed")],
   } },
-  { id: "knowledge", tag: "Knowledge", title: "Your documents, ready for any model", scene: {
+  { id: "knowledge", tag: "RAG", title: "Your documents, ready for any model", scene: {
     id: "h-knowledge", cycle: 12, height: 250, alt: "Documents, tickets and drives are read once, masked and stored as knowledge that assistants and search use.",
     caption: "", nodes: [
       n("doc", 90, 50, "Files and PDFs", L(FileText)), n("drive", 90, 120, "Cloud drives", L(Cloud)), n("tk", 90, 190, "Tickets", L(MessagesSquare)),
-      M("core", 500, 120, "Knowledge", "read, mask, index"),
+      M("core", 500, 120, "RAG", "read, mask, index"),
       n("bot", 910, 80, "Assistants", L(Bot)), n("srch", 910, 165, "Search", L(Search)),
     ],
     edges: [e("doc", "core"), e("drive", "core"), e("tk", "core"), e("core", "bot"), e("core", "srch")],
@@ -422,6 +460,16 @@ export const HERO_SLIDES: { id: string; tag: string; title: string; scene: Scene
     ],
     edges: [e("agent", "ok"), e("ok", "core"), e("core", "sl"), e("core", "gh"), e("core", "pay")],
     steps: [s("agent", "ok", 0.2), s("ok", "core", 1.1, "ok", "read allowed"), s("core", "gh", 2.0, "ok", "200 OK"), s("agent", "ok", 4.2), s("ok", "core", 5.1, "warn", "approved by Sam"), s("core", "sl", 6.0, "ok", "sent"), s("agent", "ok", 8.2), s("ok", "core", 9.1, "bad", "tool changed")],
+  } },
+  { id: "agentmesh", tag: "Agent OS", title: "Agents in a mesh, behind a network", scene: {
+    id: "h-agentmesh", cycle: 12, height: 250, alt: "A claim moves through intake, documents and review agents. A person approves before the payout agent runs. A call from outside the network is refused.",
+    caption: "", nodes: [
+      n("in", 90, 75, "Claims intake", L(Workflow)), n("out", 90, 165, "Outside caller", L(Cloud)), n("net", 300, 120, "Agent network", L(ShieldCheck)),
+      M("core", 500, 120, "Agent Mesh"),
+      n("doc", 910, 50, "Documents", L(ScanSearch)), n("rev", 910, 120, "Review", L(FileCheck)), n("per", 910, 190, "A person", L(UserCheck)),
+    ],
+    edges: [e("in", "net"), e("out", "net"), e("net", "core"), e("core", "doc"), e("core", "rev"), e("core", "per")],
+    steps: [s("in", "net", 0.2), s("net", "core", 1.1, "ok", "peered"), s("core", "doc", 2.0, "ok", "handoff"), s("core", "rev", 3.2, "ok", "handoff"), s("core", "per", 4.4, "warn", "over the limit"), s("out", "net", 7.6), s("net", "core", 8.5, "bad", "not peered, refused")],
   } },
   { id: "anywhere", tag: "Run anywhere", title: "Your cloud, your cluster, your rules", scene: {
     id: "h-anywhere", cycle: 12, height: 250, alt: "One control plane connects a managed cloud, your own cloud account, Kubernetes and air-gapped sites.",

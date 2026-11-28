@@ -24,7 +24,7 @@ export const MLOPS: DocSection = {
         { t: "list", items: [
           "**Counters**: **Deployments healthy**, **Connections healthy**, **Run success, 24 h**, **Waiting for approval**, **Open alerts** and **Build agents online**.",
           "**Needs attention** lists what is failing, expiring or waiting on a person. **Recent runs** and **How the MLOps control plane works** complete the page.",
-          "The tab bar across the top reaches every MLOps screen: Overview, Integrations, MCP servers, Models, Knowledge, Payments, Deployments, GPU and CUDA, Pipelines, Functions, Runs, Data and AI, Build agents, Learn and Settings.",
+          "The tab bar across the top reaches every MLOps screen: Overview, Integrations, MCP servers, Models, RAG, Payments, Deployments, GPU and CUDA, Pipelines, Functions, Runs, Data and AI, Build agents, Learn and Settings.",
         ] },
         { t: "callout", tone: "note", title: "Sample workspace and your organization", text: "In the sample workspace the page shows **Sample workspace** and example connections, which are tested against sample results until a connector is released. A **Viewing as** menu lets you see the screens as Viewer, Developer, Approver or Admin. In a connected organization MLOps reads and writes your organization's records." },
         { t: "cards", items: [{ title: "Integrations", body: "Connect a system.", href: "/docs/mlops/integrations" }, { title: "Pipelines", body: "Define a release.", href: "/docs/mlops/pipelines" }, { title: "Deployments", body: "Serve a model.", href: "/docs/mlops/deployments" }] },
@@ -215,6 +215,32 @@ export const MLOPS: DocSection = {
           { title: "Set access", body: "On the **Access** page choose who may call it and with what sign-in, for example an API key. Publish it. The endpoint is shown on the list." },
         ] },
         { t: "cards", items: [{ title: "Deployments", body: "Offer a model as a tool.", href: "/docs/mlops/deployments" }, { title: "Agents", body: "Agents call MCP tools.", href: "/docs/agents/agents" }] },
+      ],
+    },
+    {
+      slug: "ai-canvas",
+      title: "AI canvas",
+      summary: "See how each model reaches the people and agents that use it: the model, the gateway, the MCP servers and who may call them.",
+      console: "/mlops/canvas",
+      role: "viewer",
+      blocks: [
+        { t: "p", text: "The **AI canvas** draws the whole path in four columns and a colour for each kind of thing: **Models**, the **Gateway**, **MCP servers** and **Who may call**. A model can be hosted on your infrastructure (green), your own endpoint (blue) or a vendor (amber). Servers are purple and callers are grey." },
+        { t: "callout", tone: "sample", title: "Sample workspace", text: "The canvas reads the sample deployments, providers, servers and grants. Adding a model to the gateway and a tool to a server work in the sample. A signed-in workspace uses the provider registry and the MCP server service for your organization." },
+        { t: "h2", text: "Bring a model" },
+        { t: "list", items: [
+          "**Host a model** opens the deployment wizard. Choose the engine, the GPUs and the cluster, and register the deployment as a provider so the gateway can route to it.",
+          "**Connect your own endpoint** opens the provider wizard with the OpenAI compatible option. The credential is stored as a reference to a secret in your own vault.",
+          "A hosted model that is not in the gateway has a dashed line and **Add to the gateway**.",
+        ] },
+        { t: "h2", text: "Expose a model through MCP" },
+        { t: "steps", items: [
+          { title: "Choose Expose through MCP", body: "Pick a **Model** that is in the gateway and an **MCP server**, or a new server for the model." },
+          { title: "Name the tool", body: "Give it a **Tool name** in lower case with underscores, and a **What it does** an agent can act on." },
+          { title: "Publish and grant", body: "Open the server, publish it, and give chosen people, groups, applications or service accounts a grant. A server is closed until someone has one." },
+        ] },
+        { t: "h2", text: "Read the picture" },
+        { t: "p", text: "Point at anything to light its whole path and dim the rest. **What the picture says** lists models outside the gateway, servers in draft that have a model tool, degraded models and published servers nobody can call. Each deployment page shows the same path for that model under **Where this model is exposed**." },
+        { t: "cards", items: [{ title: "MCP servers", body: "Build the server a model is exposed on.", href: "/docs/mlops/mcp-servers" }, { title: "Deployments", body: "Host a model on your infrastructure.", href: "/docs/mlops/deployments" }] },
       ],
     },
     {

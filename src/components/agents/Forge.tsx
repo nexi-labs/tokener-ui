@@ -159,9 +159,9 @@ export function Forge({ editId }: { editId?: string }) {
         </Card>
 
         <Card>
-          {step(5, "Knowledge and memory")}
+          {step(5, "RAG and memory")}
           <CardBody className="space-y-4">
-            <Group label="Knowledge" hint="Names of Knowledge collections the agent may search. They are recorded in the specification and enforced by the gateway.">
+            <Group label="RAG" hint="Names of RAG indexes the agent may search. They are recorded in the specification and enforced by the gateway.">
               <div className="space-y-2"><div className="flex flex-wrap gap-1.5">{spec.knowledge.map((k) => chip(k, () => set("knowledge", spec.knowledge.filter((x) => x !== k))))}</div>
                 <Input value={knowledge} onChange={(e) => setKnowledge(e.target.value)} placeholder="Add a collection and press Enter" onKeyDown={(e) => { if (e.key === "Enter" && knowledge.trim()) { set("knowledge", [...new Set([...spec.knowledge, knowledge.trim()])]); setKnowledge(""); } }} /></div></Group>
             <Field label="Memory"><Select value={spec.memory} onChange={(e) => set("memory", e.target.value as ForgeSpec["memory"])}><option value="none">None. Each task starts fresh.</option><option value="session">Within a session</option><option value="persistent">Across sessions</option></Select></Field>

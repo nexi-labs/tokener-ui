@@ -11,7 +11,7 @@ import type { RoleAssignment } from "@/lib/auth/client";
 export type UserStatus = "INVITED" | "ACTIVE" | "PENDING" | "DISABLED";
 export type IamUser = {
   id: string; email: string; displayName: string; status: UserStatus; assignments: RoleAssignment[]; permissions: string[];
-  /** True once the person has chosen a password. People who sign in with Google or GitHub, and invited people who have not accepted yet, have none. */
+  /** True once the person has chosen a password. People who sign in with Google, Microsoft or GitHub, and invited people who have not accepted yet, have none. */
   passwordSet: boolean; externalProvider: string | null; lastLoginAt: string | null; createdAt: string;
 };
 export type RoleInfo = { role: string; scopes: string[]; permissions: string[] };

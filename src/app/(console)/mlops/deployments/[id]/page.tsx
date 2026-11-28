@@ -17,6 +17,11 @@ import { generateManifests } from "@/lib/mlops/manifests";
 import { mlops, useMlops, useMlopsStatus } from "@/lib/mlops/store";
 import { toast } from "@/lib/mlops/toast";
 import { toYaml, type PipelineSpec } from "@/lib/mlops/spec";
+import { AiCanvas } from "@/components/mlops/AiCanvas";
+import { buildCanvas, focusCanvas } from "@/lib/mlops/ai-canvas";
+import { useMcpServers } from "@/lib/mlops/mcp-servers";
+import { useMcpGrants } from "@/lib/mlops/mcp-access-store";
+import { useProviders } from "@/lib/gateway/useProviders";
 
 type Tab = "overview" | "metrics" | "logs" | "events" | "config";
 
@@ -26,6 +31,8 @@ export default function DeploymentDetail() {
   const live = useMlopsStatus().mode === "live";
   const role = useRole();
   const d = s.deployments.find((x) => x.id === id);
+  const servers = useMcpServers(); const grants = useMcpGrants(); const { all: providers } = useProviders();
+  const path = useMemo(() => { if (!d || !servers || !grants) return null; const ctx = { servers, providers }; const all = buildCanvas({ deployments: s.deployments, providers, servers, grants }); return all.nodes.some((n) => n.id === `d:${d.id}`) ? { canvas: focusCanvas(all, `d:${d.id}`, ctx), ctx } : null; }, [d, s.deployments, servers, grants, providers]);
   const [tab, setTab] = useState<Tab>("overview");
   const [scale, setScale] = useState(false);
   const [min, setMin] = useState("");
@@ -101,6 +108,8 @@ export default function DeploymentDetail() {
             </CardBody></Card>
           <Card><CardHeader title="Target and resources" />
             <CardBody><KeyValue rows={[["Endpoint", <span className="font-code text-xs break-all">{d.endpoint}</span>], ["Runtime", d.runtime], ...(d.accelerator ? [["Accelerator", `${d.accelerator.count} x ${d.accelerator.gpu} per replica, CUDA ${d.accelerator.cuda}${d.accelerator.driver ? ` on driver ${d.accelerator.driver}` : ""}`] as [string, React.ReactNode]] : []), ...(d.exposure?.providerId ? [["Gateway provider", <Link key="p" href={`/providers/${d.exposure.providerId}`} className="hover:underline">Registered, open provider</Link>] as [string, React.ReactNode]] : []), ...(d.exposure?.mcpServerId ? [["MCP tool", <Link key="m" href={`/mlops/mcp-servers/${d.exposure.mcpServerId}/access`} className="hover:underline"><span className="font-code text-xs">{d.exposure.mcpTool}</span>, manage who can use it</Link>] as [string, React.ReactNode]] : []), ["Target", conn ? <span>{conn.name} <span className="text-text-tertiary">({integrationById(conn.integrationId)?.name})</span></span> : "n/a"], ["CPU / memory", `${d.resources.cpu} / ${d.resources.memory}`], ["GPU", d.resources.gpu === "0" ? "none" : `${d.resources.gpu} per replica (requested, drivers managed by you)`], ["Pipeline", pl ? <Link href={`/mlops/pipelines/${pl.id}`} className="hover:underline">{pl.name}</Link> : "none"], ["Created", fmtDate(d.createdAt)], ["Updated", relTime(d.updatedAt)]]} /></CardBody></Card>
+          <Card className="lg:col-span-2"><CardHeader title="Where this model is exposed" subtitle="From the model to the gateway, the MCP servers that call it and who may call them." action={<Link href="/mlops/canvas" className="text-sm underline text-text-secondary hover:text-text-primary">Open the AI canvas</Link>} />
+            <CardBody>{path ? <AiCanvas canvas={path.canvas} servers={path.ctx.servers} providers={path.ctx.providers} /> : <p className="text-sm text-text-secondary">This model is not in the gateway, so nothing reaches it through the one endpoint and no MCP tool calls it. Add it from the <Link className="underline" href="/mlops/canvas">AI canvas</Link>.</p>}</CardBody></Card>
         </div>
       )}
 

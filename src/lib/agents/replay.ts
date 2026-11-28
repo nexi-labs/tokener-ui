@@ -13,7 +13,7 @@ export type Frame = {
   agents: Record<string, AgentFrame>;
   /** Hand-offs in progress, as "from>to" agent ids. */
   hops: Set<string>;
-  /** Connections, channels and knowledge bases in use, by key. */
+  /** Connections, channels and RAG indexes in use, by key. */
   resources: Record<string, ResourceFrame>;
   /** How many runs each agent has in flight. */
   load: Record<string, number>;

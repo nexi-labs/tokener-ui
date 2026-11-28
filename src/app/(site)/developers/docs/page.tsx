@@ -21,7 +21,7 @@ const CONCEPTS: [string, string][] = [
   ["The ledger", "Every request produces an immutable accounting event that feeds cost, budgets, billing, and analytics."],
   ["Pipelines", "A pipeline is a versioned specification of typed operators. You can author it on a canvas or in a wizard. A published version is immutable, and a run executes a snapshot of it."],
   ["Connections and secret references", "A connection links the platform to a cluster, a registry, a store or a provider. It holds a reference to a secret in your secret manager, never the secret itself."],
-  ["Knowledge bases", "Sources are scanned, split, embedded and written to your vector store. Assistants query them through the gateway and receive cited passages limited to what the caller may read."],
+  ["RAG indexes", "Sources are scanned, split, embedded and written to your vector store. Assistants query them through the gateway and receive cited passages limited to what the caller may read."],
   ["The model library", "Operators publish reviewed models. Teams import them into their own registry, and uploaded files are checksummed, inspected and scanned for code that runs on load."],
   ["Build agents and MCP servers", "A build agent runs signed jobs next to your systems and connects out only. MCP servers give agents tools, with approved tools only, pinned definitions and approval for writes."],
 ];
@@ -30,7 +30,7 @@ const GUIDES: [string, string, string][] = [
   ["Make your first request", "Quickstart", "/developers/quickstart"],
   ["Create a token and cost budget", "Console: Governance, Budget Management", "/budgets"],
   ["Configure document policies", "Console: Governance, Document Policies", "/document-policies"],
-  ["Build a knowledge base and test it", "Use case: test a knowledge base before launch", "/use-cases/knowledge-evaluation-before-launch"],
+  ["Build a RAG index and test it", "Use case: test a RAG index before launch", "/use-cases/knowledge-evaluation-before-launch"],
   ["Upload a model and get it approved", "Use case: vendor model onboarding", "/use-cases/banking-vendor-model-onboarding"],
   ["Connect a Kubernetes cluster securely", "Tutorial", "/developers/tutorials/secure-kubernetes-connection"],
   ["Register a model and deploy an endpoint", "Tutorial", "/developers/tutorials/register-model-deploy-endpoint"],

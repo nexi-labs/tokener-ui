@@ -159,9 +159,9 @@ function NetworkDialog({ open, net, onClose }: { open: boolean; net: AgentNetwor
         {err && <Notice tone="bad">{err}</Notice>}
         <Field label="Name"><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="Finance core" /></Field>
         <Field label="What it is for"><Input value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Agents that decide, match and pay." /></Field>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4 items-start">
           <Field label="Kind" hint={f.kind === "private" ? "Closed to everything outside it unless peered." : "A meeting place between teams, with the same identity rules."}><Select value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value as AgentNetwork["kind"] })}><option value="private">Private</option><option value="shared">Shared</option></Select></Field>
-          <Field label="Members prove who they are with" hint="Certificates say which agent called. Tokens say which identity it acts for."><Select value={f.identity} onChange={(e) => setF({ ...f, identity: e.target.value as AgentNetwork["identity"] })}><option value="mtls">Client certificates (mTLS)</option><option value="jwt">Signed tokens (OIDC)</option></Select></Field>
+          <Field label="Member identity" hint={f.identity === "mtls" ? "Certificates say which agent called." : "Tokens say which identity the agent acts for."}><Select value={f.identity} onChange={(e) => setF({ ...f, identity: e.target.value as AgentNetwork["identity"] })}><option value="mtls">Certificates (mTLS)</option><option value="jwt">Tokens (OIDC)</option></Select></Field>
         </div>
         <OwnerSelect value={f.owner} onChange={(v) => setF({ ...f, owner: v })} hint="The group or person who answers for who is in this network." />
       </div>

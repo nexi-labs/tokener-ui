@@ -25,8 +25,8 @@ const ICONS: Record<string, LucideIcon> = {
   support: Headset, finance: Banknote, legal: Scale, engineering: Code2, data: Database, sales: TrendingUp, people: Users, it: LifeBuoy, marketing: Megaphone,
   claims: ClipboardCheck, research: Telescope, operations: Cog, general: Bot, knowledge: BookOpen, channel: Bell, connection: Plug,
 };
-const RES_LABEL: Record<string, string> = { knowledge: "Knowledge base", channel: "Notification channel", connection: "Connection" };
-const RES_PLURAL: Record<string, string> = { knowledge: "Knowledge", channel: "Notifications", connection: "Connections" };
+const RES_LABEL: Record<string, string> = { knowledge: "RAG index", channel: "Notification channel", connection: "Connection" };
+const RES_PLURAL: Record<string, string> = { knowledge: "RAG", channel: "Notifications", connection: "Connections" };
 const HEALTH_DOT: Record<string, string> = { failing: "#FF5C6C", degraded: "#FFC857", suspended: "#8A94A0", retired: "#5B6470" };
 const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
 
@@ -184,7 +184,7 @@ export function AgentGraph({ initialSelect, onSwitchView, fullPage, onToggleFull
   useEffect(() => { const el = box.current; if (!el) return; const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight })); ro.observe(el); setSize({ w: el.clientWidth, h: el.clientHeight }); return () => ro.disconnect(); }, []);
 
 
-  // ---- calls in flight. A hand-off between agents, or an agent using a connection, channel or knowledge base, sends packets along its line.
+  // ---- calls in flight. A hand-off between agents, or an agent using a connection, channel or RAG index, sends packets along its line.
   const active = useMemo(() => {
     const out: { id: string; from: string; to: string; color: string }[] = [];
     for (const e of shown.edges) {
@@ -367,7 +367,7 @@ export function AgentGraph({ initialSelect, onSwitchView, fullPage, onToggleFull
             <Section title="Filters" open={open.filters} onToggle={() => setOpen((o) => ({ ...o, filters: !o.filters }))}>
               <div className="relative"><Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
                 <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search the graph" aria-label="Find an agent or resource" className="h-8 w-full rounded-md border border-border-strong bg-surface-subtle pl-8 pr-2 focus:outline-none focus:ring-2 focus:ring-accent-500/50" /></div>
-              <Switch label="Resources" hint="Knowledge, channels, connections" on={resources} set={setResources} />
+              <Switch label="Resources" hint="RAG, channels, connections" on={resources} set={setResources} />
               <Switch label="Retired agents" on={retired} set={setRetired} />
               <Switch label="Local graph" hint={sel ? `Around ${selNode?.label ?? "the selection"}` : "Select a node first"} on={local.on && !!sel} set={(v) => setLocal((l) => ({ ...l, on: v }))} disabled={!sel} />
               {local.on && sel && <Slider label="Depth" min={1} max={4} step={1} value={local.depth} set={(v) => setLocal((l) => ({ ...l, depth: v }))} fmt={(v) => `${v}`} />}

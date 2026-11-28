@@ -65,8 +65,8 @@ function Body({ sel, tab, setTab, onClose, onSelect, replicas }: { sel: Selectio
 
   if (sel.kind === "resource") {
     const n = use.nodes.find((x) => x.key === sel.id); if (!n) return null;
-    const kindLabel = { connection: "Connection", channel: "Notification channel", knowledge: "Knowledge base" }[n.kind];
-    const where = { connection: "Open in Integrations", channel: "Open in Notification Center", knowledge: "Open in Knowledge" }[n.kind];
+    const kindLabel = { connection: "Connection", channel: "Notification channel", knowledge: "RAG index" }[n.kind];
+    const where = { connection: "Open in Integrations", channel: "Open in Notification Center", knowledge: "Open in RAG" }[n.kind];
     const href = n.kind === "channel" ? "/notifications" : n.href;
     return <>
       <Head onClose={onClose}><div className="flex items-center gap-3"><ConnectorMark iconKey={n.iconKey} integrationId={n.integrationId} size={22} box={36} /><div className="min-w-0"><h2 className="text-base font-semibold truncate">{n.name}</h2><p className="text-xs text-text-tertiary truncate">{kindLabel}, {n.subtitle}</p></div></div>

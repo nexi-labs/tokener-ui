@@ -49,7 +49,7 @@ export const CLAIM_PACKS: ClaimPack[] = [
 export const PACK_BY_REF = Object.fromEntries(CLAIM_PACKS.map((p) => [p.ref, p])) as Record<string, ClaimPack>;
 export const fieldOf = (p: ClaimPack, key: string) => p.fields.find((f) => f.key === key);
 
-/** The passages of the Claims guidelines knowledge base that the rules come from. */
+/** The passages of the Claims guidelines RAG index that the rules come from. */
 export const GUIDELINES: Record<string, Cite> = {
   reporting: { source: "claims-handbook.pdf", heading: "Reporting and dates", page: 3, quote: "A claim must be reported within 7 days of the loss. Repair estimates and invoices must be dated after the date of loss." },
   approval: { source: "claims-handbook.pdf", heading: "Approval limits", page: 7, quote: "A payout above 5,000 needs a second person's approval. Every payout subtracts the policy excess from the amount found payable." },

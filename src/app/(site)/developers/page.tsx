@@ -41,7 +41,7 @@ except openai.RateLimitError as e:
 export default function DevelopersPage() {
   return (
     <>
-      <PageHero eyebrow="Developers" title="Governed AI calls with the client you already use." lead="OpenAI-compatible endpoints, typed errors, and a control plane API for everything the console can do.">
+      <PageHero eyebrow="Developers" title="Governed AI calls with the client you already use." lead="OpenAI-compatible endpoints, typed errors and a control plane API.">
         <LinkButton href="/developers/quickstart" arrow>Start the quickstart</LinkButton>
         <LinkButton href="/developers/api" variant="ghost-dark">API reference</LinkButton>
       </PageHero>

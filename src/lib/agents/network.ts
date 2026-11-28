@@ -91,7 +91,7 @@ export function suggestEgress(a: Pick<Agent, "tools" | "models" | "control">): E
   return out;
 }
 
-export function presetConfig(id: PresetId, a: Pick<Agent, "tools" | "models" | "control" | "name">, by = "nestor@nexi.com", network?: string): NetworkConfig {
+export function presetConfig(id: PresetId, a: Pick<Agent, "tools" | "models" | "control" | "name">, by = "jdoe@example.com", network?: string): NetworkConfig {
   const now = new Date().toISOString(); const governed = a.control === "governed";
   const base: NetworkConfig = {
     reach: "internal", network,

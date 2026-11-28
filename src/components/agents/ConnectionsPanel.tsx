@@ -19,10 +19,10 @@ import { toast } from "@/lib/mlops/toast";
 const KINDS: { id: ResourceKind; label: string; help: string }[] = [
   { id: "connection", label: "A connection", help: "Email, SMS, a message app, storage or a database from Integrations." },
   { id: "channel", label: "A notification channel", help: "A Slack, Teams, email, Discord or webhook destination from the Notification Center." },
-  { id: "knowledge", label: "A knowledge base", help: "Documents the agent retrieves from before it answers." },
+  { id: "knowledge", label: "A RAG index", help: "Documents the agent retrieves from before it answers." },
 ];
 
-/** What the agent is connected to in the organisation's hub. Nothing here is configured twice: a connection, channel or knowledge base is chosen from the screen that owns it. */
+/** What the agent is connected to in the organisation's hub. Nothing here is configured twice: a connection, channel or RAG index is chosen from the screen that owns it. */
 export function ConnectionsPanel({ a }: { a: Agent }) {
   const hub = useHub();
   const [declared, setDeclared] = useState<Binding[]>(a.bindings ?? []);
@@ -44,7 +44,7 @@ export function ConnectionsPanel({ a }: { a: Agent }) {
 
   return (
     <div className="space-y-5">
-      <Notice tone="info" title="One hub, not a second copy">Connections come from Integrations, channels from the Notification Center and knowledge from Knowledge. Credentials stay in the secret store, and every call goes through the gateway, where policy, rate limits and audit apply.</Notice>
+      <Notice tone="info" title="One hub, not a second copy">Connections come from Integrations, channels from the Notification Center and RAG indexes from RAG. Credentials stay in the secret store, and every call goes through the gateway, where policy, rate limits and audit apply.</Notice>
       <Card><CardHeader title="Connected now" subtitle="Some follow from how the agent starts and who decides. Change those in the Runtime tab." />
         {all.length === 0 ? <CardBody><p className="text-sm text-text-tertiary">This agent is not connected to anything yet.</p></CardBody> : <ul className="divide-y divide-border">
           {all.map((b) => { const r = resolve(b, hub, a); return (
@@ -63,10 +63,10 @@ export function ConnectionsPanel({ a }: { a: Agent }) {
         <CardBody className="space-y-4">
           <div className="grid sm:grid-cols-3 gap-3" role="radiogroup" aria-label="What to connect">{KINDS.map((k) => <button key={k.id} type="button" role="radio" aria-checked={kind === k.id} disabled={lock} onClick={() => pickKind(k.id)} className={clsx("text-left rounded-lg border p-3", kind === k.id ? "border-[#07191E] ring-1 ring-[#07191E] bg-surface-subtle" : "border-border hover:bg-surface-subtle")}><div className="text-sm font-semibold">{k.label}</div><div className="text-xs text-text-secondary mt-1 leading-snug">{k.help}</div></button>)}</div>
           <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
-            <Field label={kind === "connection" ? "Connection" : kind === "channel" ? "Channel" : "Knowledge base"}><Select disabled={lock} value={ref} onChange={(e) => setRef(e.target.value)}><option value="">Choose one</option>{options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</Select></Field>
+            <Field label={kind === "connection" ? "Connection" : kind === "channel" ? "Channel" : "RAG index"}><Select disabled={lock} value={ref} onChange={(e) => setRef(e.target.value)}><option value="">Choose one</option>{options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</Select></Field>
             <Field label="Use it to"><Select disabled={lock} value={`${role}|${tool}`} onChange={(e) => { const [r, t] = e.target.value.split("|"); setRole(r as Role); setTool(t); }}>{roles.map((r) => <option key={r.role + (r.tool ?? "")} value={`${r.role}|${r.tool ?? ""}`}>{r.label}</option>)}</Select></Field>
             <Button disabled={lock || !ref} onClick={add}><Plus size={14} /> Add</Button></div>
-          <p className="text-xs text-text-tertiary">Missing one? Add it in {kind === "connection" ? <Link href="/mlops/integrations" className="underline">Integrations</Link> : kind === "channel" ? <Link href="/notifications" className="underline">the Notification Center</Link> : <Link href="/mlops/knowledge" className="underline">Knowledge</Link>}, then it appears here.</p>
+          <p className="text-xs text-text-tertiary">Missing one? Add it in {kind === "connection" ? <Link href="/mlops/integrations" className="underline">Integrations</Link> : kind === "channel" ? <Link href="/notifications" className="underline">the Notification Center</Link> : <Link href="/mlops/rag" className="underline">RAG</Link>}, then it appears here.</p>
         </CardBody></Card>
 
       <Card><CardHeader title="Notification tools" subtitle="The agent calls these through the gateway. A tool needs a destination above before it can send." />

@@ -32,7 +32,7 @@ export function NetworkSetup({ subject, value, onChange }: { subject: Subject; v
   const posture = useMemo(() => assess(agent, value, networks, memberCounts({ ...cfgs, __new: value })), [agent, value, networks, cfgs]);
   const issues = useMemo(() => (value ? validateNetwork(value, agent, networks) : []), [value, agent, networks]);
   const current: PresetId | "none" = !value ? "none" : value.reach === "private" ? "private" : value.reach === "internal" ? "internal" : "public";
-  const pick = (id: PresetId | "none") => onChange(id === "none" ? undefined : presetConfig(id, agent, "nestor@nexi.com", id === "private" ? (value?.network ?? networks.find((n) => n.kind === "private")?.id) : value?.network));
+  const pick = (id: PresetId | "none") => onChange(id === "none" ? undefined : presetConfig(id, agent, "jdoe@example.com", id === "private" ? (value?.network ?? networks.find((n) => n.kind === "private")?.id) : value?.network));
   const worst = posture.findings.filter((f) => f.severity !== "good").slice(0, 2);
 
   return (

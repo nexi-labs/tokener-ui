@@ -9,6 +9,15 @@ const nextConfig = {
   devIndicators: false,
   // The browser calls /api on this origin and the server forwards it to the control plane. That keeps the refresh-token cookie first
   // party (no CORS, no third-party cookie rules). Set TOKENER_API_ORIGIN at build time for any address other than a local backend.
+  // The old names for RAG, so links people saved keep working.
+  async redirects() {
+    return [
+      { source: "/mlops/knowledge", destination: "/mlops/rag", permanent: true },
+      { source: "/mlops/knowledge/:path*", destination: "/mlops/rag/:path*", permanent: true },
+      { source: "/product/mlops/knowledge", destination: "/product/mlops/rag", permanent: true },
+      { source: "/docs/models/knowledge", destination: "/docs/models/rag", permanent: true },
+    ];
+  },
   async rewrites() {
     const origin = (process.env.TOKENER_API_ORIGIN || "http://localhost:8080").replace(/\/+$/, "");
     return [{ source: "/api/:path*", destination: `${origin}/api/:path*` }];

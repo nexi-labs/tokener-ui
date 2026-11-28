@@ -394,29 +394,29 @@ export const KNOWLEDGE: UseCase[] = [
   {
     slug: "rag-customer-support-answers",
     industry: "knowledge",
-    title: "Support answers grounded in the knowledge base, with escalation built in",
-    summary: "A customer-facing assistant answers from the published knowledge base, links the article, and hands over to an agent when it is not sure.",
+    title: "Support answers grounded in the RAG index, with escalation built in",
+    summary: "A customer-facing assistant answers from the published RAG index, links the article, and hands over to an agent when it is not sure.",
     tags: ["RAG", "Support", "Budgets"],
     challenge: [
-      "Support teams have a knowledge base, and customers do not read it. Deflecting routine questions saves money, but a wrong answer costs more than a slow one. Teams that launch a chatbot without grounding see invented policies, promises nobody authorised and customers quoting the bot's mistakes back at the company.",
+      "Support teams have a RAG index, and customers do not read it. Deflecting routine questions saves money, but a wrong answer costs more than a slow one. Teams that launch a chatbot without grounding see invented policies, promises nobody authorised and customers quoting the bot's mistakes back at the company.",
       "A good support assistant must know when to stop. Its confidence has to come from the evidence it found, not from fluent phrasing.",
     ],
     solution: [
-      "The knowledge base is ingested and indexed, with a scheduled refresh when articles change. For each question the retrieval step returns the best passages with their scores. If the best score is below the threshold, the assistant does not answer from the model's memory. It offers to connect the customer with an agent, passing the conversation along.",
+      "The RAG index is ingested and indexed, with a scheduled refresh when articles change. For each question the retrieval step returns the best passages with their scores. If the best score is below the threshold, the assistant does not answer from the model's memory. It offers to connect the customer with an agent, passing the conversation along.",
       "When the score is high enough, the assistant answers from the passages and links the article. The support project has a budget with a warning, and its policy allows only the models the company approved for customer-facing use. Resolved and escalated conversations are counted, so the team sees containment and cost per resolved question side by side.",
     ],
     steps: [
-      { title: "The knowledge base is indexed", body: "Articles are ingested and refreshed on a schedule when they change." },
+      { title: "The RAG index is indexed", body: "Articles are ingested and refreshed on a schedule when they change." },
       { title: "A customer asks", body: "The question arrives from chat with the product and language." },
       { title: "Passages and scores are retrieved", body: "The best passages are returned, each with a relevance score." },
       { title: "Confident answers link the article", body: "Above the threshold the assistant answers from the passages and links the article." },
       { title: "Uncertain questions go to an agent", body: "Below the threshold the conversation is handed to a support agent with the history." },
     ],
     scene: {
-      alt: "A customer's question retrieves knowledge base passages with scores. A confident answer links the article, and an uncertain one is handed to a support agent.",
+      alt: "A customer's question retrieves RAG index passages with scores. A confident answer links the article, and an uncertain one is handed to a support agent.",
       caption: "Confidence comes from the retrieval score, not from the model's tone.",
       cols: [
-        [["kb", "Knowledge base", "articles", "b:Zendesk"]],
+        [["kb", "RAG index", "articles", "b:Zendesk"]],
         [["index", "Index", "refreshed on change", "b:Weaviate"]],
         [["cust", "Customer", "chat", "l:MessageSquare"]],
         [["ret", "Retrieve", "score threshold", "l:ScanSearch", true]],

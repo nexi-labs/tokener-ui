@@ -11,6 +11,7 @@ import { Pipeline } from "@/components/flow/Pipeline";
 import { PRODUCTS, SOLUTIONS } from "@/lib/site";
 import { MLOPS_TOPICS } from "@/lib/mlops-site";
 import { AGENT_OS_TOPICS } from "@/lib/agent-os-site";
+import { USE_CASE_CATALOG } from "@/lib/usecases/catalog";
 import { KeyRound as K2, FileSearch, Calculator, Route, Receipt, Wallet, Shrink } from "lucide-react";
 import Image from "next/image";
 import { FlowScene } from "@/components/site/FlowScene";
@@ -82,12 +83,12 @@ export default function HomePage() {
         <GridBackdrop />
         <Container className="relative pt-16 sm:pt-24 pb-16 grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-16 items-center">
           <div>
-            <Eyebrow dark>AI infrastructure and agent governance</Eyebrow>
+            <Eyebrow dark>The enterprise AI control plane</Eyebrow>
             <h1 className="text-[2.3rem] sm:text-[3rem] xl:text-[3.4rem] text-balance leading-[1.06] font-semibold tracking-[-0.03em] text-text-inverse">
-              The enterprise AI control plane, from GPU to agent.
+              One control plane for all your AI.
             </h1>
             <Lead dark>
-              One platform for the infrastructure under your models and the rules around the agents on top.
+              Govern the gateway, the models and the agents in one place.
             </Lead>
             <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
               <LinkButton href="/signup" arrow>Get started free</LinkButton>
@@ -207,16 +208,16 @@ export default function HomePage() {
             <div>
               <Eyebrow dark>Agent OS, in preview</Eyebrow>
               <H2 dark>Let agents do the work. Keep people in charge of the decisions.</H2>
-              <Lead dark>Register agents from any framework, set budgets, approvals and data rules around them, and follow every run as one story. Every screen works today against a sample workspace.</Lead>
+              <Lead dark>Register agents from any framework, put each in a network that decides who can reach it, let teams of agents work a use case as a mesh, and keep a person where it counts. Every screen works today against a sample workspace.</Lead>
               <div className="mt-7 flex flex-wrap gap-3">
                 <LinkButton href="/product/agent-os" arrow>See Agent OS</LinkButton>
-                <LinkButton href="/blog/agent-os-approval-with-the-document-beside-it" variant="ghost-dark">Read a claims example</LinkButton>
+                <LinkButton href="/use-cases/agent-mesh-motor-claims" variant="ghost-dark">Read a claims example</LinkButton>
               </div>
             </div>
-            <Screenshot src="/screens/agentos-approvals.webp" url="app.tokener.io/agents/approvals" alt="An approval request for an insurance claim, with the document and the agent's findings side by side" />
+            <Screenshot src="/screens/agentos-constellation.webp" url="app.tokener.io/agents/constellation" alt="The Constellation: agents by department, networks as tinted zones, mesh handoffs as arrows and protocols in their own colours" />
           </div>
           <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10 border border-white/10 rounded-xl overflow-hidden">
-            {AGENT_OS_TOPICS.filter((t) => ["constellation", "conductor", "evals", "context"].includes(t.slug)).map((t) => {
+            {AGENT_OS_TOPICS.filter((t) => ["constellation", "networks", "mesh", "approvals"].includes(t.slug)).map((t) => {
               const Icon = t.icon;
               return (
                 <Link key={t.slug} href={`/product/agent-os#${t.slug}`} className="bg-ink-800 p-6 hover:bg-ink-700 transition-colors">
@@ -336,7 +337,7 @@ export default function HomePage() {
             {[
               { t: "Pipelines you can read", b: "Build visually or fill in a guided form. Both edit the same versioned spec, so a diff always means the same thing." },
               { t: "Agents that call out, never in", b: "Run deployments on servers behind your firewall. Jobs are signed, secrets are scoped to a single run, and every result is scrubbed." },
-              { t: "Your own MCP servers", b: "Turn a pipeline, a read-only query or an HTTPS endpoint into a tool any agent can call. Publish it here with access control and audit, or export the project and run it yourself." },
+              { t: "Your own models, as tools", b: "Host a model on your GPUs or connect one you run, put it behind the gateway, and offer it to chosen agents as an MCP tool. The AI canvas draws the path, with who may call it." },
               { t: "Production with a gate", b: "Policy checks, approvals and canary rollouts sit in front of every production change, and the audit trail records who decided." },
             ].map((c) => (
               <div key={c.t} className="rounded-xl border border-border p-6">
@@ -367,7 +368,7 @@ export default function HomePage() {
           <div className="mt-12"><IndustryExplorer /></div>
           <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
             <TextLink href="/solutions">All solutions</TextLink>
-            <TextLink href="/use-cases">45 use cases with animated diagrams</TextLink>
+            <TextLink href="/use-cases">{USE_CASE_CATALOG.length} use cases with animated diagrams</TextLink>
             <TextLink href="/use-cases/rag-reference-architecture">Build a RAG system</TextLink>
           </div>
         </Container>

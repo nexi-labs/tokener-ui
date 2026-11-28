@@ -47,7 +47,7 @@ export const FREE_FEATURES = [
   "Analytics and audit for 7 days",
 ];
 export const CARD_FEATURES: { id: PaidFeature; title: string; body: string }[] = [
-  { id: "save", title: "Save pipelines, knowledge bases and published versions", body: "Try them freely. Saving one asks for a payment method; you are billed only for usage beyond the free allowance." },
+  { id: "save", title: "Save pipelines, RAG indexes and published versions", body: "Try them freely. Saving one asks for a payment method; you are billed only for usage beyond the free allowance." },
   { id: "run-environment", title: "Run pipelines, functions and agents in an environment", body: "Simulation is free. Running against real data, providers and clusters is metered." },
   { id: "volume-documents", title: "Document processing at volume", body: "Beyond the free allowance, pages processed are metered." },
   { id: "retention", title: "Longer audit and analytics retention", body: "Keep history beyond 7 days." },
@@ -170,7 +170,7 @@ function seed(): BillingAccount {
       { dimension: "pipeline-compute", unit: "compute hour", quantity: 96, amountUsd: 38.4, environment: "staging", resource: "support-classifier-release" },
       { dimension: "pipeline-compute", unit: "compute hour", quantity: 44, amountUsd: 17.6, environment: "production", resource: "support-retrieval-assistant" },
       { dimension: "functions", unit: "1M invocations", quantity: 0.31, amountUsd: 6.2, environment: "production", resource: "fraud-score" },
-      { dimension: "documents", unit: "1,000 pages", quantity: 8.5, amountUsd: 25.5, environment: "production", resource: "Knowledge: support-articles" },
+      { dimension: "documents", unit: "1,000 pages", quantity: 8.5, amountUsd: 25.5, environment: "production", resource: "RAG: support-articles" },
       { dimension: "retention", unit: "GB-month", quantity: 4.2, amountUsd: 9.5, environment: "production", resource: "Audit and analytics" },
     ],
     invoices: [],

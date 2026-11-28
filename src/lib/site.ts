@@ -197,7 +197,7 @@ export const SOLUTIONS: Solution[] = [
     outcomes: [
       { title: "Tenants and inheritance", body: "Organization policy flows down and teams can only tighten it." },
       { title: "Reserved capacity terms", body: "Model enterprise contract pricing so cost reports match the invoice." },
-      { title: "Sign-in and roles", body: "Sign in with Google, GitHub, or email and password, with role and attribute based access." },
+      { title: "Sign-in and roles", body: "Sign in with Google, Microsoft, GitHub, or email and password, with role and attribute based access." },
     ],
     uses: ["Internal developer platforms", "Shared AI services for business units", "Centralized provider contracts"],
   },
@@ -377,7 +377,7 @@ export const NAV = {
   products: [
     ...PRODUCTS.map((p) => ({ label: p.name, href: `/product/${p.slug}`, desc: p.short, icon: p.icon })),
     { label: "Refinery", href: "/product/mlops/refinery", desc: "Prepare and clean data for model training, in batch or as a stream.", icon: RefineryGlyph as LucideIcon },
-    { label: "Agent OS", href: "/product/agent-os", desc: "Register, govern, run and evaluate agents from any framework.", icon: Orbit },
+    { label: "Agent OS", href: "/product/agent-os", desc: "Register agents, set their networks, run them as a mesh and evaluate them.", icon: Orbit },
     { label: "MLOps and AI infrastructure", href: "/product/mlops", desc: "Connect clusters, build pipelines, deploy and observe models.", icon: Boxes },
   ],
   solutions: SOLUTIONS.map((s) => ({ label: s.name, href: `/solutions/${s.slug}`, desc: s.short, icon: s.icon })),
@@ -407,13 +407,58 @@ export const NAV = {
   ],
 };
 
+/**
+ * The footer is a map, not a sitemap: five short columns in the manner of Confluent and AWS. Each column holds the pages most people want,
+ * the full lists stay in the header menus and on their own index pages, and the legal links live in the bottom bar.
+ */
 export const FOOTER_COLS: { title: string; links: { label: string; href: string }[] }[] = [
-  { title: "Product", links: [{ label: "Platform overview", href: "/product" }, ...PRODUCTS.map((p) => ({ label: p.name, href: `/product/${p.slug}` })), { label: "Agent OS", href: "/product/agent-os" }, { label: "MLOps and AI infrastructure", href: "/product/mlops" }, { label: "Connectors", href: "/connectors" }, { label: "Integration catalogue", href: "/product/mlops/integrations" }, { label: "Pricing", href: "/pricing" }] },
-  { title: "Solutions", links: SOLUTIONS.map((s) => ({ label: s.name, href: `/solutions/${s.slug}` })) },
-  { title: "Use cases", links: [{ label: "All use cases", href: "/use-cases" }, { label: "Retrieval and RAG", href: "/use-cases/rag-reference-architecture" }, ...INDUSTRY_ORDER.filter((i) => i !== "knowledge").map((i) => ({ label: INDUSTRY_LABELS[i], href: `/use-cases?industry=${i}` }))] },
-  { title: "Developers", links: NAV.developers.map((d) => ({ label: d.label, href: d.href })) },
-  { title: "Company", links: [{ label: "About", href: "/about" }, { label: "Careers", href: "/careers" }, { label: "Blog", href: "/blog" }, { label: "Customers", href: "/customers" }, { label: "Contact", href: "/contact" }, { label: "Brand", href: "/brand" }, { label: "Security", href: "/security" }, { label: "Status", href: "/status" }] },
-  { title: "Legal", links: [{ label: "All legal documents", href: "/legal" }, { label: "Terms of service", href: "/legal/terms" }, { label: "Service terms", href: "/legal/service-terms" }, { label: "Privacy policy", href: "/legal/privacy" }, { label: "Data processing addendum", href: "/legal/dpa" }, { label: "Acceptable use policy", href: "/legal/acceptable-use" }, { label: "Responsible AI policy", href: "/legal/ai-use" }, { label: "Cookie notice", href: "/legal/cookies" }, { label: "Report a security issue", href: "/legal/security-reporting" }] },
+  { title: "Platform", links: [
+    { label: "Overview", href: "/product" },
+    { label: "AI Gateway", href: "/product/gateway" },
+    { label: "Policy Engine", href: "/product/policy-engine" },
+    { label: "Agent OS", href: "/product/agent-os" },
+    { label: "MLOps and AI infrastructure", href: "/product/mlops" },
+    { label: "Connectors", href: "/connectors" },
+    { label: "Pricing", href: "/pricing" },
+  ] },
+  { title: "Solutions", links: [
+    { label: "Banking", href: "/solutions/banking" },
+    { label: "Healthcare", href: "/solutions/healthcare" },
+    { label: "Insurance", href: "/solutions/insurance" },
+    { label: "Public sector", href: "/solutions/public-sector" },
+    { label: "Startups", href: "/solutions/startups" },
+    { label: "All solutions", href: "/solutions" },
+    { label: "Use cases", href: "/use-cases" },
+  ] },
+  { title: "Developers", links: [
+    { label: "Documentation", href: "/docs" },
+    { label: "Quickstart", href: "/developers/quickstart" },
+    { label: "API reference", href: "/developers/api" },
+    { label: "SDKs", href: "/developers/sdks" },
+    { label: "Tutorials", href: "/developers/tutorials" },
+    { label: "Status", href: "/status" },
+  ] },
+  { title: "Resources", links: [
+    { label: "Blog", href: "/blog" },
+    { label: "Customers", href: "/customers" },
+    { label: "Security and trust", href: "/security" },
+    { label: "Report a security issue", href: "/legal/security-reporting" },
+    { label: "Brand", href: "/brand" },
+  ] },
+  { title: "Company", links: [
+    { label: "About", href: "/about" },
+    { label: "Careers", href: "/careers" },
+    { label: "Contact", href: "/contact" },
+    { label: "Talk to sales", href: "/contact" },
+  ] },
+];
+
+/** Legal links for the bottom bar. The rest are on /legal. */
+export const FOOTER_LEGAL: { label: string; href: string }[] = [
+  { label: "Terms", href: "/legal/terms" },
+  { label: "Privacy", href: "/legal/privacy" },
+  { label: "Cookies", href: "/legal/cookies" },
+  { label: "All legal", href: "/legal" },
 ];
 
 export type Tier = {
@@ -447,7 +492,7 @@ export const TIERS: Tier[] = [
     blurb: "Add a card or US bank account when you first save or launch something metered. Free credit is used first, then usage is billed monthly in arrears.",
     cta: { label: "Start free", href: "/signup" },
     featured: true,
-    features: ["Save pipelines, knowledge bases and published versions", "Run pipelines, functions and agents in an environment", "Document processing at volume", "Longer audit and analytics retention", "More tenants and production deployments"],
+    features: ["Save pipelines, RAG indexes and published versions", "Run pipelines, functions and agents in an environment", "Document processing at volume", "Longer audit and analytics retention", "More tenants and production deployments"],
   },
   {
     name: "Commitment",
@@ -468,14 +513,14 @@ export const COMPARE: { feature: string; dev: string; team: string; ent: string 
   { feature: "Cost optimization", dev: "Lossless cleanup and exact cache", team: "Adds semantic cache, document library and balanced mode", ent: "Adds aggressive mode, learned compression and quality reports" },
   { feature: "Document processing", dev: "Free allowance", team: "Metered per page", ent: "Metered, custom OCR" },
   { feature: "Audit retention", dev: "7 days", team: "Extended, metered", ent: "7 years" },
-  { feature: "Sign-in methods", dev: "Google, GitHub, email", team: "Google, GitHub, email", ent: "Google, GitHub, email" },
+  { feature: "Sign-in methods", dev: "Google, Microsoft, GitHub, email", team: "Google, Microsoft, GitHub, email", ent: "Google, Microsoft, GitHub, email" },
   { feature: "Deployment", dev: "SaaS", team: "SaaS", ent: "SaaS, dedicated, private, on-prem, air-gapped" },
   { feature: "Support", dev: "Community", team: "Support plans", ent: "24x7 with SLA" },
 ];
 
 export const FAQS: { q: string; a: string }[] = [
   { q: "Is it really free to start?", a: "Yes. New organizations get usage credit that lasts 30 days or until it is used, whichever comes first, and you do not need a card to explore. You can try any feature. Simulation stays free." },
-  { q: "When will I be asked for a payment method?", a: "When you save or launch something that is metered, such as saving a pipeline or knowledge base, publishing a version or running in an environment. You add it right there and carry on. It is also needed before the free start ends. Only organization admins and finance can add one." },
+  { q: "When will I be asked for a payment method?", a: "When you save or launch something that is metered, such as saving a pipeline or RAG index, publishing a version or running in an environment. You add it right there and carry on. It is also needed before the free start ends. Only organization admins and finance can add one." },
   { q: "What happens when the free credit ends?", a: "The free start ends after 30 days or when the credit is used, whichever comes first. It cannot be paused, and sales can extend it. With no payment method the organization is suspended: features are unavailable and data cannot be reached. Adding a payment method or redeeming a promo code restores access. If neither happens within 30 days of suspension, resources are deleted; the organization and its people are kept." },
   { q: "When am I charged?", a: "Your payment method is not charged until the free start ends. Free credit is used first. Usage then accrues hourly, with part of an hour billed as a full hour, and is invoiced monthly in arrears. Billing starts when you create a resource and stops when you delete it. Usage appears in the console as it happens." },
   { q: "Can I set a spending cap?", a: "There is no hard dollar cap. Set budgets and alerts to be told before spend gets away from you, and use an annual commitment to plan spend. Free start notices go out at half and 80 percent of the credit, at the halfway point of the 30 days, and when it expires in under three days." },

@@ -5,7 +5,7 @@ export const metadata = { title: "About | tok∑ner" };
 export default function AboutPage() {
   return (
     <>
-      <PageHero eyebrow="About" title="AI should be as governable as any other infrastructure." lead="tok∑ner exists because spend, access, and accountability for AI were scattered across code, spreadsheets, and provider dashboards." />
+      <PageHero eyebrow="About" title="AI should be as governable as any other infrastructure." lead="Spend, access and accountability for AI were scattered. We built one place for them." />
       <section className="py-16 sm:py-24">
         <Container className="grid lg:grid-cols-2 gap-12">
           <div>

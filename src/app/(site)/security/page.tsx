@@ -4,7 +4,7 @@ import { Container, PageHero, Eyebrow, H2, CtaBand, LinkButton } from "@/compone
 export const metadata = { title: "Security and trust | tok∑ner" };
 
 const BLOCKS = [
-  { icon: KeyRound, title: "Identity", body: "Sign in with Google, GitHub, or an email and password. Passwords are hashed with PBKDF2 and checked against a strength policy, sessions use short-lived access tokens with rotating refresh tokens, and a reused refresh token ends the whole session. Application keys are hashed at rest and never logged." },
+  { icon: KeyRound, title: "Identity", body: "Sign in with Google, Microsoft, GitHub, or an email and password. Passwords are hashed with PBKDF2 and checked against a strength policy, sessions use short-lived access tokens with rotating refresh tokens, and a reused refresh token ends the whole session. Application keys are hashed at rest and never logged." },
   { icon: ShieldCheck, title: "Authorization", body: "Role based access for coarse control and attribute based rules for fine control, evaluated on the same engine as data plane policy. Role changes are audited." },
   { icon: Lock, title: "Encryption", body: "TLS 1.2 or higher everywhere, mutual TLS inside the service mesh, encrypted volumes, and column-level encryption for sensitive fields where prompt logging is enabled." },
   { icon: Database, title: "Tenant isolation", body: "Application-layer filtering, PostgreSQL row-level security, and tenant-keyed Kafka partitioning with ACLs where feasible. Each layer is independently sufficient." },
@@ -15,7 +15,7 @@ const BLOCKS = [
 export default function SecurityPage() {
   return (
     <>
-      <PageHero eyebrow="Security and trust" title="Designed so one mistake is never enough." lead="Controls are layered, secrets stay in a vault, and the audit trail cannot be rewritten through the application.">
+      <PageHero eyebrow="Security and trust" title="Designed so one mistake is never enough." lead="Layered controls, secrets in a vault, and an audit trail you cannot rewrite.">
         <LinkButton href="/contact" arrow>Request the security pack</LinkButton>
       </PageHero>
       <section className="py-16 sm:py-24">

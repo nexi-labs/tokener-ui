@@ -531,19 +531,19 @@ const demoActions = {
     return { ok: true };
   },
 
-  // ---------------------------------------------------------------- knowledge bases
+  // ---------------------------------------------------------------- RAG indexes
   createKnowledgeBase(i: KbInput): Result<{ id: string }> {
     const g = guard("pipeline.publish", i.env); if (!g.ok) return g;
     const name = i.name.trim();
     if (!/^[a-z0-9][a-z0-9-]{1,62}$/.test(name)) return fail("Use lowercase letters, numbers and dashes for the name, 2 to 63 characters.");
     const s0 = get();
-    if (s0.knowledge.some((k) => k.id === name)) return fail(`A knowledge base named ${name} already exists.`);
+    if (s0.knowledge.some((k) => k.id === name)) return fail(`A RAG index named ${name} already exists.`);
     const idx = s0.connections.find((c) => c.id === i.index.connectionId);
     if (!idx) return fail("Choose a vector store connection.");
-    if (idx.env !== i.env && i.env !== "development") return fail(`This knowledge base is for ${i.env}. The vector store connection belongs to ${idx.env}.`);
+    if (idx.env !== i.env && i.env !== "development") return fail(`This RAG index is for ${i.env}. The vector store connection belongs to ${idx.env}.`);
     if (!/^[a-z][a-z0-9_]{1,62}$/.test(i.index.collection)) return fail("The collection name uses lowercase letters, numbers and underscores.");
     if (/_g\d+$/.test(i.index.collection)) return fail("A collection name cannot end in _g and a number. Those suffixes are used for re-indexed generations.");
-    if (s0.knowledge.some((k) => k.index.connectionId === i.index.connectionId && k.index.collection === i.index.collection)) return fail("That collection already belongs to another knowledge base on this vector store.");
+    if (s0.knowledge.some((k) => k.index.connectionId === i.index.connectionId && k.index.collection === i.index.collection)) return fail("That collection already belongs to another RAG index on this vector store.");
     if (!(i.embedding.dimension > 0)) return fail("Enter the embedding dimension.");
     if (!(i.processing.chunkTokens >= 64 && i.processing.chunkTokens <= 4096)) return fail("Chunk size is between 64 and 4096 tokens.");
     if (!(i.processing.overlap >= 0 && i.processing.overlap < i.processing.chunkTokens / 2)) return fail("Overlap must be below half the chunk size.");
@@ -577,7 +577,7 @@ const demoActions = {
 
   syncKnowledgeBase(id: string): Result<{ health: "ok" | "partial" | "failed" }> {
     const kb = get().knowledge.find((k) => k.id === id);
-    if (!kb) return fail("Unknown knowledge base");
+    if (!kb) return fail("Unknown RAG index");
     const g = guard("pipeline.run", kb.env); if (!g.ok) return g;
     if (get().settings.killSwitch) return fail("The kill switch is on. Runs are stopped for this organization.");
     if (kb.sources.length === 0) return fail("Add a source first.");
@@ -605,11 +605,11 @@ const demoActions = {
 
   addKnowledgeSource(id: string, sd: { name: string; connectionId: string; path: string; include: string }): Result {
     const kb = get().knowledge.find((k) => k.id === id);
-    if (!kb) return fail("Unknown knowledge base");
+    if (!kb) return fail("Unknown RAG index");
     const g = guard("pipeline.publish", kb.env); if (!g.ok) return g;
     const c = get().connections.find((x) => x.id === sd.connectionId);
     if (!c) return fail("Choose a connection.");
-    if (kb.sources.some((x) => x.connectionId === c.id && x.path === sd.path)) return fail("That path is already a source of this knowledge base.");
+    if (kb.sources.some((x) => x.connectionId === c.id && x.path === sd.path)) return fail("That path is already a source of this RAG index.");
     const src: KbSource = { id: uid("src"), name: sd.name || c.name, kind: "object-store", connectionId: c.id, path: sd.path || "/", include: sd.include || "*", documents: 0, status: "pending" };
     set((s) => audit({ ...s, knowledge: s.knowledge.map((k) => (k.id !== id ? k : { ...k, sources: [...k.sources, src], status: k.status === "empty" ? "indexing" : k.status })) }, "knowledge.source.add", kb.name, `${c.name} ${src.path}`, kb.env));
     return { ok: true };
@@ -627,7 +627,7 @@ const demoActions = {
 
   addEvalQuestion(id: string, question: string, expectedSource: string): Result {
     const kb = get().knowledge.find((k) => k.id === id);
-    if (!kb) return fail("Unknown knowledge base");
+    if (!kb) return fail("Unknown RAG index");
     const g = guard("pipeline.edit", kb.env); if (!g.ok) return g;
     if (question.trim().length < 6) return fail("Write the question the way a user would ask it.");
     set((s) => ({ ...s, knowledge: s.knowledge.map((k) => (k.id !== id ? k : { ...k, evalQuestions: [...k.evalQuestions, { id: uid("q"), question: question.trim(), expectedSource }] })) }));
@@ -637,14 +637,14 @@ const demoActions = {
   /** Sample workspace only: keyword overlap over the passages held in this browser. A signed-in workspace asks the server, which ranks by vector similarity. */
   searchKnowledge(id: string, q: { query: string; topK: number; minScore: number; source?: string }): Result<{ hits: Hit[] }> {
     const kb = get().knowledge.find((k) => k.id === id);
-    if (!kb) return fail("Unknown knowledge base");
+    if (!kb) return fail("Unknown RAG index");
     if (!q.query.trim()) return fail("Write a question to search for.");
     return { ok: true, hits: searchChunks(kb.chunks, q.query, { topK: q.topK, minScore: q.minScore, source: q.source }) };
   },
 
   runKnowledgeEvaluation(id: string): Result {
     const kb = get().knowledge.find((k) => k.id === id);
-    if (!kb) return fail("Unknown knowledge base");
+    if (!kb) return fail("Unknown RAG index");
     const g = guard("pipeline.run", kb.env); if (!g.ok) return g;
     if (kb.evalQuestions.length === 0) return fail("Add test questions first.");
     if (kb.chunks.length === 0) return fail("Nothing is indexed yet. Sync a source first.");
@@ -655,11 +655,11 @@ const demoActions = {
 
   updateKnowledgeAccess(id: string, access: KnowledgeBase["access"], schedule: KnowledgeBase["schedule"]): Result {
     const kb = get().knowledge.find((k) => k.id === id);
-    if (!kb) return fail("Unknown knowledge base");
+    if (!kb) return fail("Unknown RAG index");
     const g = guard("settings.edit"); if (!g.ok) return g;
     if (!(access.minScore >= 0 && access.minScore <= 1)) return fail("The minimum score is between 0 and 1.");
     if (!(access.topK >= 1 && access.topK <= 50)) return fail("Top K is between 1 and 50.");
-    if (access.projects.length === 0) return fail("Allow at least one project, or nothing can query this knowledge base.");
+    if (access.projects.length === 0) return fail("Allow at least one project, or nothing can query this RAG index.");
     set((s) => audit({ ...s, knowledge: s.knowledge.map((k) => (k.id !== id ? k : { ...k, access, schedule })) }, "knowledge.access", kb.name, `Projects: ${access.projects.join(", ")}. Source permissions ${access.aclAware ? "enforced" : "not enforced"}.`, kb.env));
     return { ok: true };
   },
@@ -667,7 +667,7 @@ const demoActions = {
   /** Changing how documents are split or embedded invalidates every stored passage, so it queues a full re-index. */
   updateKnowledgeProcessing(id: string, processing: KnowledgeBase["processing"], embedding: KnowledgeBase["embedding"]): Result {
     const kb = get().knowledge.find((k) => k.id === id);
-    if (!kb) return fail("Unknown knowledge base");
+    if (!kb) return fail("Unknown RAG index");
     const g = guard("pipeline.publish", kb.env); if (!g.ok) return g;
     if (!(processing.chunkTokens >= 64 && processing.chunkTokens <= 4096)) return fail("Chunk size is between 64 and 4096 tokens.");
     if (!(processing.overlap >= 0 && processing.overlap < processing.chunkTokens / 2)) return fail("Overlap must be below half the chunk size.");
@@ -682,7 +682,7 @@ const demoActions = {
 
   deleteKnowledgeBase(id: string): Result {
     const kb = get().knowledge.find((k) => k.id === id);
-    if (!kb) return fail("Unknown knowledge base");
+    if (!kb) return fail("Unknown RAG index");
     const g = guard("settings.edit"); if (!g.ok) return g;
     const used = get().pipelines.filter((p) => p.versions.some((v) => v.spec.nodes.some((n) => n.operator === "vector_index" || n.operator === "retrieve") && v.spec.nodes.some((n) => n.config.collection === kb.index.collection))).map((p) => p.name);
     if (used.length) return fail(`In use by pipeline ${used.slice(0, 3).join(", ")}. Remove those references first.`);

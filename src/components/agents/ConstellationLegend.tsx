@@ -103,10 +103,10 @@ export function Legend({ off, setOff, layers, setLayers, counts, highlight, setH
           {([["#2563EB", "Working, with what it is doing"], [STATE_COLORS.waiting, "Waiting for a person"], [STATE_COLORS.failed, "A step failed"], ["#02F5A1", "Replicas changing, count in a chip"]] as const).map(([c, t]) => (
             <div key={t} className="flex items-center gap-2.5 px-2 py-1 text-[13px]"><span className="w-[26px] grid place-items-center"><span className="h-3 w-3 rounded-full border-[2.5px]" style={{ borderColor: c }} /></span>{t}</div>
           ))}
-          <p className="px-2 pt-1 text-[11px] leading-snug text-text-tertiary">Lines carry moving dashes while work is handed on. A connection, channel or knowledge base lights up when an agent calls it.</p>
+          <p className="px-2 pt-1 text-[11px] leading-snug text-text-tertiary">Lines carry moving dashes while work is handed on. A connection, channel or RAG index lights up when an agent calls it.</p>
 
           <div className={head}><span>Show</span></div>
-          {([["groups", "Department boxes"], ["connectors", "Connections, channels, knowledge"], ["security", "Security shields"], ["zones", "Network zones"], ["meshBadges", "Mesh badges"], ["meshEdges", "All mesh handoffs"], ["labels", "Names"], ["traffic", "Moving traffic"], ["retired", "Retired agents"]] as const).map(([k, label]) => (
+          {([["groups", "Department boxes"], ["connectors", "Connections, channels, RAG"], ["security", "Security shields"], ["zones", "Network zones"], ["meshBadges", "Mesh badges"], ["meshEdges", "All mesh handoffs"], ["labels", "Names"], ["traffic", "Moving traffic"], ["retired", "Retired agents"]] as const).map(([k, label]) => (
             <label key={k} className={clsx(row, "cursor-pointer")}><input type="checkbox" checked={layers[k]} onChange={() => setLayers({ ...layers, [k]: !layers[k] })} className="accent-[#07191E]" /><span>{label}</span></label>
           ))}
         </div>

@@ -30,7 +30,7 @@ export const crucibleNow = () => get();
 export const resetCrucible = () => { state = init(); listeners.forEach((l) => l()); };
 
 /** In the sample workspace each role acts as a different person, so a two person approval can be tried by switching role. */
-export const ACTOR: Record<RoleId, string> = { viewer: "A viewer", developer: "priya.nair@nexi.example", approver: "marcus.lee@nexi.example", admin: "nestor@nexi.com" };
+export const ACTOR: Record<RoleId, string> = { viewer: "A viewer", developer: "priya.nair@nexi.example", approver: "marcus.lee@nexi.example", admin: "jdoe@example.com" };
 
 const guard = (role: RoleId, action: Action): Result<never> | null => { const d = can(role, action); return d.ok ? null : { ok: false, error: d.reason ?? "Not allowed." }; };
 const note = (by: string, what: string) => set({ log: [{ at: new Date().toISOString(), by, what }, ...get().log].slice(0, 50) });

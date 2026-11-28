@@ -2,14 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { siGithub, siX, siLinkedin } from "simple-icons";
 import { SimpleIcon } from "@/components/icons/SimpleIcon";
-import { FOOTER_COLS } from "@/lib/site";
+import { FOOTER_COLS, FOOTER_LEGAL } from "@/lib/site";
 import { Container } from "./ui";
 
 export function SiteFooter() {
   return (
     <footer className="bg-ink-900 text-text-tertiary">
-      <Container className="py-14">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-x-6 gap-y-10">
+      <Container className="pt-14 pb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-[1.4fr_repeat(5,1fr)] gap-x-8 gap-y-10">
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <Image src="/brand/logo-dark.svg" alt="tok∑ner" width={122} height={38} />
             <p className="text-xs leading-relaxed mt-4 max-w-[220px]">The enterprise control plane for the AI you call and the AI you run.</p>
@@ -37,8 +37,8 @@ export function SiteFooter() {
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-xs">
           <span>&copy; {new Date().getFullYear()} tok&#8721;ner. All rights reserved.</span>
           <nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2">
-            {[["Privacy", "/legal/privacy"], ["Terms", "/legal/terms"], ["Cookies", "/legal/cookies"], ["Security reporting", "/legal/security-reporting"], ["All legal", "/legal"]].map(([l, h]) => (
-              <Link key={h} href={h} className="hover:text-text-inverse transition-colors">{l}</Link>
+            {FOOTER_LEGAL.map((l) => (
+              <Link key={l.href} href={l.href} className="hover:text-text-inverse transition-colors">{l.label}</Link>
             ))}
           </nav>
         </div>

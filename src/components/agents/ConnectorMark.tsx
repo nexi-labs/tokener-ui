@@ -3,7 +3,7 @@
 import { NodeIcon } from "@/components/studio/icons";
 import { iconFor, resolve, type Hub, type ResourceKind } from "@/lib/agents/connectors";
 
-/** The brand mark of a connection, channel or knowledge base, taken from the catalogue so it matches Integrations. */
+/** The brand mark of a connection, channel or RAG index, taken from the catalogue so it matches Integrations. */
 export function ConnectorMark({ iconKey, integrationId, size = 16, box = 28 }: { iconKey: string; integrationId?: string; size?: number; box?: number }) {
   return <span className="grid place-items-center rounded-md bg-surface-muted shrink-0" style={{ width: box, height: box }}><NodeIcon icon={iconFor({ iconKey, integrationId })} size={size} /></span>;
 }

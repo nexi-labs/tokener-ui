@@ -23,7 +23,7 @@ type Edge = { id: string; from: string; to: string; tone: Tone; dashed?: boolean
 const hostOf = (a: Agent) => a.network?.ingress.tls.hostname?.trim() || `${a.name}.agents.tokener.example`;
 const gradeTone = (p: Posture): Tone => (p.grade === "A" || p.grade === "B" ? "good" : p.grade === "C" ? "warn" : "bad");
 
-function useEdges(deps: unknown[]) {
+export function useEdges(deps: unknown[]) {
   const box = useRef<HTMLDivElement>(null); const nodes = useRef(new Map<string, HTMLElement>());
   const [geo, setGeo] = useState<{ w: number; h: number; pts: Map<string, { l: [number, number]; r: [number, number] }> }>({ w: 0, h: 0, pts: new Map() });
   const ref = useCallback((id: string) => (el: HTMLElement | null) => { if (el) nodes.current.set(id, el); else nodes.current.delete(id); }, []);
@@ -37,7 +37,7 @@ function useEdges(deps: unknown[]) {
   return { box, ref, geo };
 }
 
-const curve = (a: [number, number], b: [number, number]) => { const dx = Math.max(24, (b[0] - a[0]) * 0.5); return `M ${a[0]} ${a[1]} C ${a[0] + dx} ${a[1]}, ${b[0] - dx} ${b[1]}, ${b[0]} ${b[1]}`; };
+export const curve = (a: [number, number], b: [number, number]) => { const dx = Math.max(24, (b[0] - a[0]) * 0.5); return `M ${a[0]} ${a[1]} C ${a[0] + dx} ${a[1]}, ${b[0] - dx} ${b[1]}, ${b[0]} ${b[1]}`; };
 
 export function NetworkCanvas({ network, onEdit }: { network: AgentNetwork | null; onEdit?: (n: AgentNetwork) => void }) {
   const { agents, networks } = useAgents();

@@ -701,7 +701,7 @@ export const MLOPS_DIAGRAMS: Record<string, Diagram[]> = {
     },
   ],
 
-  // ------------------------------------------------------------------------------------------------ Knowledge bases
+  // ------------------------------------------------------------------------------------------------ RAG indexes
   knowledge: [
     {
       id: "kb-ingest",
@@ -722,7 +722,7 @@ export const MLOPS_DIAGRAMS: Record<string, Diagram[]> = {
     {
       id: "kb-query",
       title: "Retrieval that respects who is asking",
-      lead: "An assistant queries a knowledge base through the gateway. Results are filtered to what the caller could read in the source system, cut at your minimum score, and returned with their source and page so an answer can be checked.",
+      lead: "An assistant queries a RAG index through the gateway. Results are filtered to what the caller could read in the source system, cut at your minimum score, and returned with their source and page so an answer can be checked.",
       spec: {
         alt: "An assistant sends a question. Retrieval embeds it, searches the index, filters by permissions and minimum score and returns passages with citations.",
         caption: "Permission filtering happens before ranking is returned, not after.",
@@ -740,11 +740,11 @@ export const MLOPS_DIAGRAMS: Record<string, Diagram[]> = {
       title: "A test set that tells you when retrieval gets worse",
       lead: "Keep questions with the document that should answer them, including questions that should return nothing. Run the set to get recall at 5, mean reciprocal rank and no-answer accuracy, and see exactly which questions failed.",
       spec: {
-        alt: "A test set of questions is run against the knowledge base. The evaluation computes recall, rank quality and no-answer accuracy and lists failures.",
+        alt: "A test set of questions is run against the RAG index. The evaluation computes recall, rank quality and no-answer accuracy and lists failures.",
         caption: "Change the chunk size, run the set, and see whether it helped.",
         cols: [
           [["qs", "Test questions", "8, with expected source", "l:ListChecks"]],
-          [["kb", "Knowledge base", "retrieval", "l:Database", true]],
+          [["kb", "RAG index", "retrieval", "l:Database", true]],
           [["ev", "Evaluation", "recall at 5, MRR", "l:BarChart3"]],
           [["fail", "Failed questions", "to fix", "l:ClipboardCheck"]],
         ],

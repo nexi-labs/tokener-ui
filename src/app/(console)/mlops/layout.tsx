@@ -11,7 +11,7 @@ import { toast } from "@/lib/mlops/toast";
 import { DemoBanner, Loading, Notice, Toaster } from "@/components/mlops/ui";
 
 /** Shorter names for the section strip so every section fits on one row. The full names stay in the sidebar, breadcrumb and page titles. */
-const SHORT: Record<string, string> = { "/mlops/mcp-servers": "MCP servers", "/mlops/data-services": "Data and AI", "/mlops/build-agents": "Build agents", "/mlops/settings": "Settings" };
+const SHORT: Record<string, string> = { "/mlops/mcp-servers": "MCP servers", "/mlops/canvas": "AI canvas", "/mlops/data-services": "Data and AI", "/mlops/build-agents": "Build agents", "/mlops/settings": "Settings" };
 
 export default function MlopsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

@@ -12,7 +12,7 @@ const surface = "rgb(var(--c-surface))";
 const border = "rgb(var(--c-border-strong))";
 export const LIVE_COLOR = "#2563EB";
 
-/** A curve from an agent to a connection, channel or knowledge base, leaving the agent to the right and arriving from the left. */
+/** A curve from an agent to a connection, channel or RAG index, leaving the agent to the right and arriving from the left. */
 export function resourcePath(from: Pt, to: Pt, inbound: boolean): { d: string; mid: Pt } {
   const r = NODE / 2 + 5;
   const a = { x: from.x + 44, y: from.y }; const b = { x: to.x - r, y: to.y };

@@ -274,7 +274,7 @@ export const PIPELINES: Record<string, Sketch> = {
   },
   "rag-reference-architecture": retrieval("Documents", "knowledge_base", "knowledge-assistant"),
   "rag-enterprise-knowledge-search": retrieval("Wiki and policy exports", "company_wide", "knowledge-search"),
-  "rag-customer-support-answers": retrieval("Knowledge base articles", "support_kb", "support-assistant"),
+  "rag-customer-support-answers": retrieval("RAG index articles", "support_kb", "support-assistant"),
   "rag-permission-aware-retrieval": retrieval("Finance documents", "finance_restricted", "finance-assistant"),
   "rag-fresh-index-with-schedules": {
     nodes: [

@@ -64,7 +64,7 @@ To unsubscribe from these notifications, click here.`,
   {
     id: "rag-context",
     label: "Retrieved documents",
-    note: "Three overlapping passages from a knowledge base.",
+    note: "Three overlapping passages from a RAG index.",
     question: "How long do customers have to return an item, and who pays for shipping?",
     text: `Source A. Our store opened in 2011 and now serves customers in 14 countries. Returns are accepted within 30 days of delivery for unused items in original packaging. The return label is free for faulty goods. Gift cards are not refundable. Our warehouse is located in Rotterdam and ships on weekdays.
 

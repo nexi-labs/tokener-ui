@@ -7,9 +7,10 @@ import { FEATURES } from "./features";
 import { FUNCTIONS_CASES } from "./functions";
 import { REFINERY } from "./refinery";
 import { PIPELINES } from "./pipelines";
+import { AGENT_OS_CASES } from "./agent-os";
 import type { UseCase } from "./types";
 
-export const USE_CASES: UseCase[] = [...KNOWLEDGE.filter((u) => u.industry === "knowledge"), ...FEATURES.filter((u) => u.industry === "knowledge"), ...REGULATED, ...COMMERCE, ...OPERATIONS, ...KNOWLEDGE.filter((u) => u.industry !== "knowledge"), ...PLATFORM, ...FEATURES.filter((u) => u.industry !== "knowledge"), ...FUNCTIONS_CASES, ...REFINERY];
+export const USE_CASES: UseCase[] = [...KNOWLEDGE.filter((u) => u.industry === "knowledge"), ...FEATURES.filter((u) => u.industry === "knowledge"), ...REGULATED, ...COMMERCE, ...OPERATIONS, ...KNOWLEDGE.filter((u) => u.industry !== "knowledge"), ...PLATFORM, ...FEATURES.filter((u) => u.industry !== "knowledge"), ...FUNCTIONS_CASES, ...REFINERY, ...AGENT_OS_CASES];
 
 export const bySlug = (slug: string) => USE_CASES.find((u) => u.slug === slug);
 export const forIndustry = (industry: string) => USE_CASES.filter((u) => u.industry === industry);

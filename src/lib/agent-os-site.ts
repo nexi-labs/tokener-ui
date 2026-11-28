@@ -1,3 +1,4 @@
+import { AgentNetworkIcon, AgentMeshIcon, ConstellationIcon } from "@/components/icons/AgentOsIcons";
 import {
   Orbit, Bot, ShieldCheck, ClipboardCheck, FlaskConical, Workflow, Brain, Plug, Terminal, Users, Radar, Gauge, Waypoints,
   type LucideIcon,
@@ -10,8 +11,8 @@ export const AGENT_OS_STATUS =
 
 export const AGENT_OS_FLOW: { t: string; d: string; icon: LucideIcon }[] = [
   { t: "Register", d: "Bring agents built in any framework into one registry, with an owner, a department and a project.", icon: Bot },
-  { t: "Govern", d: "Set budgets, approvals, data protection and network rules around each agent.", icon: ShieldCheck },
-  { t: "Run", d: "Choose how it runs: on demand, always on, streaming or batch, with scaling that follows the work.", icon: Gauge },
+  { t: "Govern", d: "Set budgets, approvals and data rules around each agent, and put it in a network that decides who can reach it.", icon: ShieldCheck },
+  { t: "Run", d: "Choose how it runs, then let agents work a use case together as a mesh, with limits per case and a person where it counts.", icon: Gauge },
   { t: "Watch", d: "Follow every run as one story with a shared correlation id, then evaluate it before changes ship.", icon: Radar },
 ];
 
@@ -22,14 +23,44 @@ export const AGENT_OS_TOPICS: AgentOsTopic[] = [
     slug: "constellation",
     name: "Constellation",
     short: "A live map of every agent, who it talks to, and which rules surround it.",
-    icon: Orbit,
+    icon: ConstellationIcon,
     shot: "/screens/agentos-constellation.webp",
     shotUrl: "app.tokener.io/agents/constellation",
     points: [
       "Agents grouped by department, with knowledge, notifications and connections drawn from your integrations",
-      "Lines show how agents talk: TAP, A2A, MCP, HTTPS and events",
-      "Dashed lines show budget, approval, data protection, rate limit and network rules around an agent",
+      "Lines show how agents talk, each protocol in its own colour: TAP, A2A, MCP, HTTPS and events",
+      "Each network is a tinted zone, with a dashed line where two networks are peered, and a shield on every agent graded A to E",
+      "Point at a mesh to draw its handoffs as arrows with the condition on each, and dim everyone else",
       "Agents that anyone outside can reach are marked, and an open one is flagged in red",
+    ],
+  },
+  {
+    slug: "networks",
+    name: "Agent Networks",
+    short: "Decide who can reach each agent and what it may call, with an edge in front of the public ones and a grade for every agent.",
+    icon: AgentNetworkIcon,
+    shot: "/screens/agentos-networks.webp",
+    shotUrl: "app.tokener.io/agents/networks",
+    points: [
+      "Named networks, private or shared, closed to everything outside unless peered, with certificates or signed tokens between members",
+      "For each agent: how callers arrive, who may call, limits per caller, a shield for prompt injection and personal data, and what it may call out to",
+      "A grade from A to E with the next fix, and testers that run a sample call in or out and show which control decided",
+      "A canvas for each network, in the style of a tunnel: routes in, the agents inside, and what each may call",
+    ],
+  },
+  {
+    slug: "mesh",
+    name: "Agent Mesh",
+    short: "Agents that work one use case together: the pattern, the roles, the handoffs, the limits per case and where a person decides.",
+    icon: AgentMeshIcon,
+    shot: "/screens/agentos-mesh.webp",
+    shotUrl: "app.tokener.io/agents/mesh",
+    points: [
+      "Five patterns: pipeline, supervisor, router, maker and checker, and peers, with a role for each agent",
+      "Handoffs with conditions and what each one carries, so the path a case takes is written down",
+      "Limits per case: handoffs, cost, working time and a loop guard, with people who approve before an agent acts",
+      "Checked against Agent Networks, so a handoff between agents that cannot reach each other stops the mesh going live",
+      "A live view that replays a sample case, with its cost and time, and a health tab that compares it with your objectives",
     ],
   },
   {
@@ -152,5 +183,6 @@ export const AGENT_OS_FAQ: { q: string; a: string }[] = [
   { q: "Do my agents have to be built in tok∑ner?", a: "No. You can register agents from other frameworks and managed agent products. They then sit under the same budgets, approvals and data rules, and appear on the same map. Adapters are marked Planned or In development until the platform team has tested them against the vendor's own test service." },
   { q: "Are the figures on the screens real?", a: "No. Figures, people, documents and amounts on the preview screens are examples. Evaluation scoring is simulated, and memory recall in the sample workspace matches words. A connected workspace uses your own models and data." },
   { q: "Where do secrets go?", a: "Nowhere in an agent. Agents and connections hold a reference to a secret in your own secret manager, and the platform resolves it when a call is made. Keys shown in the console are shown once." },
-  { q: "Can we bring our own model?", a: "Yes. A model in the Forge can be a hosted model or one of your own deployments from the Model Registry. Only a deployment outside development, with an approved version and a healthy state, can be chosen." },
+  { q: "What is the difference between an agent network and an agent mesh?", a: "A network answers who can reach whom and what an agent may call. A mesh answers who should work together on a use case, in what order, with what limits and where a person decides. The two are checked against each other: a mesh handoff between agents that no network lets talk is an error." },
+  { q: "Can we bring our own model?", a: "Yes. Host a model on your own infrastructure, connect an endpoint you already run, or use a vendor, and put any of them behind the one gateway. A model in the Forge can then be a hosted model or one of your own deployments from the Model Registry. The AI canvas draws how each model reaches an MCP server and who may call it." },
 ];

@@ -93,7 +93,7 @@ export default function PeoplePage() {
                   <Tr key={u.id}>
                     <Td>
                       <div className="font-medium text-text-primary">{u.displayName}{self && <span className="ml-2 text-xs font-normal text-text-tertiary">you</span>}</div>
-                      <div className="text-xs text-text-tertiary">{u.email}{u.externalProvider ? ` · ${u.externalProvider === "github" ? "GitHub" : u.externalProvider === "google" ? "Google" : u.externalProvider}` : ""}</div>
+                      <div className="text-xs text-text-tertiary">{u.email}{u.externalProvider ? ` · ${u.externalProvider === "github" ? "GitHub" : u.externalProvider === "google" ? "Google" : u.externalProvider === "microsoft" ? "Microsoft" : u.externalProvider}` : ""}</div>
                     </Td>
                     <Td><Badge tone={TONE[u.status]}>{STATUS_LABEL[u.status]}</Badge></Td>
                     <Td>

@@ -102,7 +102,7 @@ export const ADAPTERS: AdapterDef[] = [
     id: "llamaindex", name: "LlamaIndex", vendor: "LlamaIndex", kind: "framework", icon: cdn("llama", "7A4BFF", Sparkles),
     blurb: "Agents grounded in your documents and data, with retrieval built in.",
     build: { language: "python", packages: ["llama-index-core", "llama-index-llms-openai-like", "llama-index-tools-mcp"], features: { tools: yes, mcp: yes, streaming: yes, memory: yes, multiAgent: yes, humanInLoop: part, otel: part },
-      notes: "A function agent over an OpenAI-compatible model. Add a query engine tool to ground it in a tok∑ner Knowledge base." },
+      notes: "A function agent over an OpenAI-compatible model. Add a query engine tool to ground it in a tok∑ner RAG index." },
     docs: [{ label: "LlamaIndex", url: "https://docs.llamaindex.ai/" }],
   },
   {

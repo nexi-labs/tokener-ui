@@ -62,17 +62,17 @@ export const REFINERY: UseCase[] = [
     ],
     solution: [
       "Refinery treats documents as a source. A binary file is read by the document-processing module on a runner, and the result is one table with a row per page: document id, file name, type, page, language, recognition confidence and text. Text-like files are read directly. The recipe then removes headers, footers and page numbers, drops pages below a confidence floor into a review set, normalises whitespace and hyphenation, and masks what must be masked.",
-      "Because the work is large, the run uses a pool of runners in parallel and converts the intermediate result to Parquet once, so every later step reads a columnar format. The output keeps the page so a retrieval answer can cite it, and the same table feeds both the knowledge base and the training set.",
+      "Because the work is large, the run uses a pool of runners in parallel and converts the intermediate result to Parquet once, so every later step reads a columnar format. The output keeps the page so a retrieval answer can cite it, and the same table feeds both the RAG index and the training set.",
     ],
     steps: [
       { title: "Point at the library", body: "Read the bucket or upload files. PDFs, Word, PowerPoint, HTML, email, images and audio are all accepted." },
       { title: "Extract to one table", body: "One row per page with the text, the language and the recognition confidence." },
       { title: "Clean the text", body: "Remove repeated headers and footers, fix hyphenation, normalise whitespace and mask sensitive values." },
       { title: "Set a confidence floor", body: "Pages below the floor go to a review set instead of the corpus." },
-      { title: "Write for both uses", body: "Write Parquet for training and send the same rows to a knowledge base for retrieval with page citations." },
+      { title: "Write for both uses", body: "Write Parquet for training and send the same rows to a RAG index for retrieval with page citations." },
     ],
     scene: {
-      alt: "Contracts in several formats are extracted to a page table, cleaned on a runner pool, and written as Parquet. Low confidence pages go to a review set, and good pages feed a knowledge base and a training job.",
+      alt: "Contracts in several formats are extracted to a page table, cleaned on a runner pool, and written as Parquet. Low confidence pages go to a review set, and good pages feed a RAG index and a training job.",
       caption: "Low-confidence pages are set aside for review rather than blended into the corpus.",
       cols: [
         [["lib", "Contract library", "PDF, Word, scans", "b:Amazon S3"]],
@@ -80,7 +80,7 @@ export const REFINERY: UseCase[] = [
         [["rcp", "Recipe", "clean and mask", "l:Workflow", true]],
         [["pool", "Runner pool", "parallel", "l:Cpu"]],
         [["pq", "Corpus", "Parquet", "l:Layers"], ["rev", "Review set", "low confidence", "l:Eye"]],
-        [["kb", "Knowledge base", "cited pages", "l:BookOpen"], ["train", "Training job", "clause classifier", "l:Rocket"]],
+        [["kb", "RAG index", "cited pages", "l:BookOpen"], ["train", "Training job", "clause classifier", "l:Rocket"]],
       ],
       flow: [
         "lib>ext|info|mixed formats", "ext>rcp|ok|page rows", "rcp>pool|ok", "pool>pq|ok|Parquet", "pq>kb|info|with pages", "pq>train|info|dataset version",
@@ -91,7 +91,7 @@ export const REFINERY: UseCase[] = [
     systems: ["Amazon S3", "MinIO", "Apache Spark"],
     controls: ["Masking before text is written", "Matter and client fields kept as columns for filtering", "Review set for low-confidence pages", "Runner pools in your network"],
     measures: ["Pages below the confidence floor", "Share of pages with a repeated header removed", "Retrieval recall on a test set", "Classifier accuracy on held-out contracts"],
-    example: "A library of mixed files is read once into a page table. Pages with low recognition confidence are queued for a person to check, and the rest become a Parquet corpus that the knowledge base and the classifier both read.",
+    example: "A library of mixed files is read once into a page table. Pages with low recognition confidence are queued for a person to check, and the rest become a Parquet corpus that the RAG index and the classifier both read.",
     console: { ...DATASET },
   },
   {

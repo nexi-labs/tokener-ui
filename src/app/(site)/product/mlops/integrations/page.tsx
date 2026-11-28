@@ -6,7 +6,7 @@ export const metadata = { title: "Integration catalogue | MLOps | tok∑ner", de
 export default function IntegrationsPage() {
   return (
     <>
-      <PageHero eyebrow="MLOps / Integrations" title="The integration catalogue, with honest statuses." lead="Each entry says whether a real connector exists, which versions it targets, what it needs and where the vendor documentation lives. In development means the connector is specified and being built, with sample results in the setup flow until it ships." />
+      <PageHero eyebrow="MLOps / Integrations" title="Every integration, with an honest status." lead="Every connector, with its real status and what it needs." />
       <section className="py-14 sm:py-20"><Container><IntegrationCatalogue /></Container></section>
       <CtaBand />
     </>

@@ -20,11 +20,11 @@ A page is `{ slug, title, summary, console?, role?, blocks: Block[] }`. Section 
 
 - start: overview, concepts, first-request, console-tour, roles-and-access
 - governance: policy-studio, policy-builder, document-policies, budgets, quotas, cost-optimization
-- agents: control-arena, constellation, agents, approvals, traces, evals, forge, conductor, context, adapters, cli, protocols, code-mode
-- models: providers, model-registry, model-versions, knowledge, data-services
+- agents: control-arena, constellation, networks, mesh, agents, approvals, traces, evals, forge, conductor, context, adapters, cli, protocols, code-mode
+- models: providers, model-registry, model-versions, rag, data-services
 - crucible: overview, projects, experiments-and-runs, datasets, storage, lineage, jobs, continuous-training, memory, adapters
 - refinery: overview, connections, datasets, recipes, runs, runners, streams, sovereignty, activity
-- mlops: overview, pipeline-studio, pipelines, functions, runs, deployments, gpu, build-agents, integrations, mcp-servers, learn
+- mlops: overview, pipeline-studio, pipelines, functions, runs, deployments, gpu, build-agents, integrations, mcp-servers, ai-canvas, learn
 - observability: dashboard, analytics, request-trace, usage, audit, mlops-observability
 - organization: tenants, people, roles, billing, payments, notifications, account-settings
 - developer: api-keys, service-accounts, sdks, api-reference, errors

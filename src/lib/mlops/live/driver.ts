@@ -262,7 +262,7 @@ export function createLiveDriver(port: Port) {
       return run(async () => { await http.post(`${org()}/payments/${paymentId}/refunds/${refundId}:${decision}`, {}); await after("payments"); return { ok: true }; });
     },
 
-    // knowledge bases
+    // RAG indexes
     async createKnowledgeBase(i: KbFields): Promise<Result<{ id: string }>> {
       return run(async () => {
         const created = await http.post<J>(`${org()}/knowledge`, {

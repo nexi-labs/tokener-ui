@@ -62,12 +62,12 @@ export const PLATFORM: UseCase[] = [
       "Automating them with an agent raises the control question. Which systems may the agent touch, and who is responsible when it changes something? A shared admin account for the agent is unacceptable, and so is a free-form agent with a long list of tools.",
     ],
     solution: [
-      "The pipeline reads a request, retrieves the matching procedure from the indexed knowledge base and asks a model to propose the steps. Read steps, such as checking a user's group membership, run through approved read-only MCP tools. Change steps wait at an approval gate with the proposal, the procedure and the exact tool call visible to the approver.",
+      "The pipeline reads a request, retrieves the matching procedure from the indexed RAG index and asks a model to propose the steps. Read steps, such as checking a user's group membership, run through approved read-only MCP tools. Change steps wait at an approval gate with the proposal, the procedure and the exact tool call visible to the approver.",
       "Each tool is approved by an administrator, and a tool whose definition changes is stopped until it is approved again. The agent has its own identity with the least privilege each tool needs. Every request produces a trace that lists what was read, what was proposed, who approved and what was changed, which helps both the ticket and the audit.",
     ],
     steps: [
       { title: "A request is received", body: "The ticket text and the requester's identity are passed to the pipeline." },
-      { title: "The procedure is retrieved", body: "The matching procedure is found in the indexed knowledge base." },
+      { title: "The procedure is retrieved", body: "The matching procedure is found in the indexed RAG index." },
       { title: "Read tools gather facts", body: "Approved read-only tools check group membership and current state." },
       { title: "A person approves the change", body: "The approver sees the proposal, the procedure and the tool call, and approves or declines." },
       { title: "The tool runs and the ticket is updated", body: "The approved change is made and the trace is attached to the ticket." },
